@@ -2,95 +2,125 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Scrollable Text Manager</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+    <title>Mobile Text Manager</title>
+
     <style>
+        /* 🔹 Mobile-first reset */
         * {
             box-sizing: border-box;
-            font-family: "Segoe UI", sans-serif;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            margin: 0;
+            background: #f2f3f7;
             min-height: 100vh;
             display: flex;
             justify-content: center;
-            align-items: center;
-            margin: 0;
         }
 
+        /* 🔹 App container */
         .container {
-            background: #fff;
-            width: 420px;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 12px 30px rgba(0,0,0,0.25);
+            width: 100%;
+            max-width: 480px;
+            background: #ffffff;
+            padding: 12px;
         }
 
+        /* 🔹 Header */
         h2 {
             text-align: center;
-            margin-bottom: 15px;
-            color: #333;
+            margin: 6px 0 10px;
+            font-size: 1.2rem;
         }
 
-        .input-area,
-        .search-area {
+        /* 🔹 Sticky input area (mobile-friendly) */
+        .input-area {
             display: flex;
-            gap: 10px;
-            margin-bottom: 12px;
+            gap: 8px;
+            position: sticky;
+            top: 0;
+            background: #fff;
+            padding: 8px 0;
+            z-index: 10;
         }
 
         input {
             flex: 1;
-            padding: 10px;
-            border-radius: 8px;
+            padding: 12px;
+            font-size: 16px; /* 👈 prevents zoom */
+            border-radius: 10px;
             border: 1px solid #ccc;
-            outline: none;
         }
 
         button {
-            padding: 10px 16px;
+            min-width: 48px;
+            padding: 12px;
             border: none;
-            border-radius: 8px;
-            cursor: pointer;
+            border-radius: 10px;
+            font-size: 16px;
             color: #fff;
+            cursor: pointer;
         }
 
         .add {
             background: #667eea;
         }
 
+        /* 🔹 Search */
+        .search-area {
+            display: flex;
+            gap: 8px;
+            margin: 10px 0;
+        }
+
         .search {
             background: #4caf50;
         }
 
-        button:hover {
-            opacity: 0.9;
-        }
-
-        /* Only 3 items visible */
+        /* 🔹 List (3 items visible) */
         ul {
             list-style: none;
             padding: 0;
             margin: 0;
-            max-height: 180px;
+            max-height: 210px; /* 👈 approx 3 items */
             overflow-y: auto;
-            border-top: 1px solid #eee;
+            -webkit-overflow-scrolling: touch;
         }
 
+        /* 🔹 List item */
         li {
             background: #f4f6ff;
-            margin: 8px 0;
+            margin-bottom: 8px;
             padding: 10px;
-            border-radius: 8px;
+            border-radius: 12px;
             display: flex;
-            justify-content: space-between;
             align-items: center;
+            gap: 8px;
         }
 
+            /* 🔹 Editable text */
+            li span {
+                flex: 1;
+                font-size: 16px;
+                outline: none;
+                padding: 6px;
+                border-radius: 8px;
+            }
+
+                li span:focus {
+                    background: #fff;
+                    box-shadow: inset 0 0 0 2px #667eea;
+                }
+
+        /* 🔹 Action buttons (thumb-friendly) */
         .actions button {
-            margin-left: 5px;
-            padding: 5px 8px;
-            font-size: 14px;
+            min-width: 42px;
+            min-height: 42px;
+            padding: 6px;
+            font-size: 18px;
         }
 
         .up {
@@ -104,76 +134,87 @@
         .delete {
             background: #f44336;
         }
+
+        /* 🔹 Desktop refinement (optional) */
+        @@media (min-width: 768px) {
+            body {
+                align-items: center;
+            }
+
+            .container {
+                border-radius: 14px;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            }
+        }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h2>Text Manager</h2>
+        <h2>Preposition</h2>
 
-        <!-- Add Text -->
+        <!-- Add -->
         <div class="input-area">
-            <input type="text" id="textInput" placeholder="Enter text">
-            <button class="add" onclick="addText()">Add</button>
+            <input id="textInput" placeholder="Enter text">
+            <button class="add" onclick="addText()">➕</button>
         </div>
 
         <!-- Search -->
         <div class="search-area">
-            <input type="text" id="searchInput" placeholder="Search text">
-            <button class="search" onclick="searchText()">Search</button>
+            <input id="searchInput" placeholder="Search">
+            <button class="search" onclick="searchText()">🔍</button>
         </div>
 
-        <!-- Scrollable List -->
+        <!-- List -->
         <ul id="list"></ul>
     </div>
 
     <script>
-        const STORAGE_KEY = "textManagerData";
+        const STORAGE_KEY = "mobileTextManager";
 
-        // Load stored data on page load
-        document.addEventListener("DOMContentLoaded", loadFromStorage);
-
-        function loadFromStorage() {
+        /* Load */
+        document.addEventListener("DOMContentLoaded", () => {
             const data = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-            data.forEach(text => createListItem(text));
+            data.forEach(text => createItem(text));
+        });
+
+        /* Save */
+        function save() {
+            const data = [];
+            document.querySelectorAll("#list span").forEach(s => data.push(s.innerText));
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
         }
 
-        function saveToStorage() {
-            const items = [];
-            document.querySelectorAll("#list li span").forEach(span => {
-                items.push(span.innerText);
-            });
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
-        }
-
+        /* Add */
         function addText() {
             const input = document.getElementById("textInput");
-            const value = input.value.trim();
-            if (!value) return;
-
-            createListItem(value);
+            if (!input.value.trim()) return;
+            createItem(input.value.trim());
             input.value = "";
-            saveToStorage();
+            save();
         }
 
-        function createListItem(text) {
+        /* Create item */
+        function createItem(text) {
             const li = document.createElement("li");
             li.innerHTML = `
-                <span>${text}</span>
+                <span contenteditable="true">${text}</span>
                 <div class="actions">
                     <button class="up" onclick="moveUp(this)">⬆</button>
                     <button class="down" onclick="moveDown(this)">⬇</button>
                     <button class="delete" onclick="removeItem(this)">❌</button>
                 </div>
             `;
+            li.querySelector("span").addEventListener("blur", save);
             document.getElementById("list").appendChild(li);
         }
 
+        /* Reorder */
         function moveUp(btn) {
             const li = btn.closest("li");
             if (li.previousElementSibling) {
                 li.parentNode.insertBefore(li, li.previousElementSibling);
-                saveToStorage();
+                save();
             }
         }
 
@@ -181,22 +222,21 @@
             const li = btn.closest("li");
             if (li.nextElementSibling) {
                 li.parentNode.insertBefore(li.nextElementSibling, li);
-                saveToStorage();
+                save();
             }
         }
 
+        /* Delete */
         function removeItem(btn) {
             btn.closest("li").remove();
-            saveToStorage(); // remove from LocalStorage as well
+            save();
         }
 
+        /* Search */
         function searchText() {
-            const query = document.getElementById("searchInput").value.toLowerCase();
-            const items = document.querySelectorAll("#list li");
-
-            items.forEach(item => {
-                const text = item.querySelector("span").innerText.toLowerCase();
-                item.style.display = text.includes(query) ? "flex" : "none";
+            const q = document.getElementById("searchInput").value.toLowerCase();
+            document.querySelectorAll("#list li").forEach(li => {
+                li.style.display = li.innerText.toLowerCase().includes(q) ? "flex" : "none";
             });
         }
     </script>
