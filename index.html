@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Scrollable Text Manager</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: "Segoe UI", sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0;
+        }
+
+        .container {
+            background: #fff;
+            width: 420px;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 12px 30px rgba(0,0,0,0.25);
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .input-area,
+        .search-area {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        input {
+            flex: 1;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            outline: none;
+        }
+
+        button {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            color: #fff;
+        }
+
+        .add {
+            background: #667eea;
+        }
+
+        .search {
+            background: #4caf50;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        /* Only 3 items visible */
+        ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            max-height: 180px;
+            overflow-y: auto;
+            border-top: 1px solid #eee;
+        }
+
+        li {
+            background: #f4f6ff;
+            margin: 8px 0;
+            padding: 10px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .actions button {
+            margin-left: 5px;
+            padding: 5px 8px;
+            font-size: 14px;
+        }
+
+        .up {
+            background: #4caf50;
+        }
+
+        .down {
+            background: #2196f3;
+        }
+
+        .delete {
+            background: #f44336;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Text Manager</h2>
+
+        <!-- Add Text -->
+        <div class="input-area">
+            <input type="text" id="textInput" placeholder="Enter text">
+            <button class="add" onclick="addText()">Add</button>
+        </div>
+
+        <!-- Search -->
+        <div class="search-area">
+            <input type="text" id="searchInput" placeholder="Search text">
+            <button class="search" onclick="searchText()">Search</button>
+        </div>
+
+        <!-- Scrollable List -->
+        <ul id="list"></ul>
+    </div>
+
+    <script>
+        const STORAGE_KEY = "textManagerData";
+
+        // Load stored data on page load
+        document.addEventListener("DOMContentLoaded", loadFromStorage);
+
+        function loadFromStorage() {
+            const data = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+            data.forEach(text => createListItem(text));
+        }
+
+        function saveToStorage() {
+            const items = [];
+            document.querySelectorAll("#list li span").forEach(span => {
+                items.push(span.innerText);
+            });
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+        }
+
+        function addText() {
+            const input = document.getElementById("textInput");
+            const value = input.value.trim();
+            if (!value) return;
+
+            createListItem(value);
+            input.value = "";
+            saveToStorage();
+        }
+
+        function createListItem(text) {
+            const li = document.createElement("li");
+            li.innerHTML = `
+                <span>${text}</span>
+                <div class="actions">
+                    <button class="up" onclick="moveUp(this)">⬆</button>
+                    <button class="down" onclick="moveDown(this)">⬇</button>
+                    <button class="delete" onclick="removeItem(this)">❌</button>
+                </div>
+            `;
+            document.getElementById("list").appendChild(li);
+        }
+
+        function moveUp(btn) {
+            const li = btn.closest("li");
+            if (li.previousElementSibling) {
+                li.parentNode.insertBefore(li, li.previousElementSibling);
+                saveToStorage();
+            }
+        }
+
+        function moveDown(btn) {
+            const li = btn.closest("li");
+            if (li.nextElementSibling) {
+                li.parentNode.insertBefore(li.nextElementSibling, li);
+                saveToStorage();
+            }
+        }
+
+        function removeItem(btn) {
+            btn.closest("li").remove();
+            saveToStorage(); // remove from LocalStorage as well
+        }
+
+        function searchText() {
+            const query = document.getElementById("searchInput").value.toLowerCase();
+            const items = document.querySelectorAll("#list li");
+
+            items.forEach(item => {
+                const text = item.querySelector("span").innerText.toLowerCase();
+                item.style.display = text.includes(query) ? "flex" : "none";
+            });
+        }
+    </script>
+
+</body>
+</html>
