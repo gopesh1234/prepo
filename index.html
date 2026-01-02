@@ -4,115 +4,115 @@
     <meta charset="utf-8" />
 
     <style>
-    * {
-        box-sizing: border-box;
-    }
+        * {
+            box-sizing: border-box;
+        }
 
-    body {
-        margin: 0;
-        font-family: system-ui, -apple-system, BlinkMacSystemFont, Roboto, Arial, sans-serif;
-        background: #f5f5f5;
-        color: #212121;
-    }
+        body {
+            margin: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, Roboto, Arial, sans-serif;
+            background: #f5f5f5;
+            color: #212121;
+        }
 
-    .container {
-        max-width: 480px;
-        margin: 0 auto;
-        min-height: 100vh;
-        padding: 12px;
-    }
-
-    h2 {
-        font-size: 16px;
-        font-weight: 600;
-        text-align: center;
-        padding: 12px 0;
-        margin: 0 0 10px 0;
-    }
-
-    /* Section cards */
-    .row {
-        background: #ffffff;
-        border-radius: 8px;
-        padding: 12px;
-        margin-bottom: 10px;
-    }
-
-    label {
-        font-size: 12px;
-        color: #616161;
-        display: block;
-        margin-bottom: 6px;
-    }
-
-    input, select {
-        width: 100%;
-        padding: 12px;
-        font-size: 14px;
-        border-radius: 6px;
-        border: 1px solid #cfcfcf;
-        background: #fff;
-        outline: none;
-    }
-
-    input:focus, select:focus {
-        border-color: #1976d2;
-    }
-
-    button {
-        width: 100%;
-        margin-top: 10px;
-        padding: 12px;
-        font-size: 14px;
-        font-weight: 500;
-        border-radius: 6px;
-        border: none;
-        background: #1976d2;
-        color: white;
-        cursor: pointer;
-    }
-
-    button:active {
-        background: #1565c0;
-    }
-
-    /* Cards list */
-    .cards {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-    }
-
-    .card {
-        background: #ffffff;
-        border-radius: 8px;
-        padding: 12px;
-        border-left: 4px solid #1976d2;
-    }
-
-    .card strong {
-        font-size: 14px;
-        display: block;
-        margin-bottom: 4px;
-    }
-
-    .card small {
-        font-size: 12px;
-        color: #757575;
-    }
-
-    /* Desktop enhancement */
-    @@media (min-width: 768px) {
         .container {
-            max-width: 900px;
-            padding: 20px;
+            max-width: 480px;
+            margin: 0 auto;
+            min-height: 100vh;
+            padding: 12px;
         }
 
-        .cards {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        h2 {
+            font-size: 16px;
+            font-weight: 600;
+            text-align: center;
+            padding: 12px 0;
+            margin: 0 0 10px 0;
         }
-    }
+
+        /* Section cards */
+        .row {
+            background: #ffffff;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+        }
+
+        label {
+            font-size: 12px;
+            color: #616161;
+            display: block;
+            margin-bottom: 6px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            font-size: 14px;
+            border-radius: 6px;
+            border: 1px solid #cfcfcf;
+            background: #fff;
+            outline: none;
+        }
+
+            input:focus, select:focus {
+                border-color: #1976d2;
+            }
+
+        button {
+            width: 100%;
+            margin-top: 10px;
+            padding: 12px;
+            font-size: 14px;
+            font-weight: 500;
+            border-radius: 6px;
+            border: none;
+            background: #1976d2;
+            color: white;
+            cursor: pointer;
+        }
+
+            button:active {
+                background: #1565c0;
+            }
+
+        /* Cards list */
+        .cards {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .card {
+            background: #ffffff;
+            border-radius: 8px;
+            padding: 12px;
+            border-left: 4px solid #1976d2;
+        }
+
+            .card strong {
+                font-size: 14px;
+                display: block;
+                margin-bottom: 4px;
+            }
+
+            .card small {
+                font-size: 12px;
+                color: #757575;
+            }
+
+        /* Desktop enhancement */
+        @@media (min-width: 768px) {
+            .container {
+                max-width: 900px;
+                padding: 20px;
+            }
+
+            .cards {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            }
+        }
 
         button.danger {
             background: #d32f2f;
@@ -122,7 +122,7 @@
                 background: #b71c1c;
             }
 
-</style>
+    </style>
 
 
 
@@ -130,7 +130,7 @@
 
 <body>
 
-    <div class="container">
+    <div class="container" style="margin-left: 5%; width: 35%;">
         <h2>Preposition-Phrasal Verb</h2>
 
         <!-- Add Dropdown Option -->
@@ -154,8 +154,12 @@
         </div>
 
         <!-- Cards -->
-        <div id="cardContainer" class="cards"></div>
     </div>
+    <div id="cardContainer" class="cards container" style="width: 50%;
+    margin-right: 6%;
+    margin-top: -42%;
+    max-height: 100px;"></div>
+
 
     <script>
         let data = JSON.parse(localStorage.getItem("dropdownData")) || {};
