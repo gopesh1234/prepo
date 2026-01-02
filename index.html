@@ -113,6 +113,15 @@
             grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
         }
     }
+
+        button.danger {
+            background: #d32f2f;
+        }
+
+            button.danger:active {
+                background: #b71c1c;
+            }
+
 </style>
 
 
@@ -122,12 +131,11 @@
 <body>
 
     <div class="container">
-        <h2>Dropdown Based Data Cards</h2>
-
+        <h2>Preposition-Phrasal Verb</h2>
         <!-- Add Dropdown Option -->
         <div class="row">
             <input id="newOption" placeholder="Add dropdown value" />
-            <button onclick="addOption()">Add</button>
+            <button style="width: 9%; margin-left: 45%;" onclick="addOption()">Add</button>
         </div>
 
         <!-- Dropdown -->
@@ -138,11 +146,13 @@
         <!-- Add Text Attached to Dropdown -->
         <div class="row">
             <input id="cardText" placeholder="Add text for selected dropdown" />
-            <button onclick="addCard()">Save</button>
+            <button style="width: 9%; margin-left: 45%;" onclick="addCard()">Save</button>
+            <button class="danger" style="width: 9%; margin-left: 45%;" onclick="deleteDropdown()">
+                X
+            </button>
+
         </div>
 
-        <!-- Cards -->
-        <div id="cardContainer" class="cards"></div>
     </div>
 
     <script>
@@ -205,6 +215,24 @@
         // Init
         loadDropdown();
         renderCards();
+
+        function deleteDropdown() {
+            const selected = dropdown.value;
+            if (!selected) return;
+
+            const confirmDelete = confirm(
+                `Delete "${selected}" and all its data?`
+            );
+
+            if (!confirmDelete) return;
+
+            // Remove dropdown data
+            delete data[selected];
+
+            saveData();
+            loadDropdown();
+            renderCards();
+        }
     </script>
 
 </body>
