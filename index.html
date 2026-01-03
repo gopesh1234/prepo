@@ -30,19 +30,11 @@
             margin: 0 0 10px 0;
         }
 
-        /* Section cards */
         .row {
             background: #ffffff;
             border-radius: 8px;
             padding: 12px;
             margin-bottom: 10px;
-        }
-
-        label {
-            font-size: 12px;
-            color: #616161;
-            display: block;
-            margin-bottom: 6px;
         }
 
         input, select {
@@ -76,7 +68,15 @@
                 background: #1565c0;
             }
 
-        /* Cards list */
+            button.danger {
+                background: #d32f2f;
+            }
+
+                button.danger:active {
+                    background: #b71c1c;
+                }
+
+        /* Cards */
         .cards {
             display: flex;
             flex-direction: column;
@@ -88,6 +88,7 @@
             border-radius: 8px;
             padding: 12px;
             border-left: 4px solid #1976d2;
+            position: relative; /* NEW */
         }
 
             .card strong {
@@ -101,31 +102,26 @@
                 color: #757575;
             }
 
-        /* Desktop enhancement */
-        @@media (min-width: 768px) {
-            .container {
-                max-width: 900px;
-                padding: 20px;
-            }
-
-            .cards {
-                display: grid;
-                grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-            }
+        /* 🔥 NEW: delete card button */
+        .delete-card {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: #e53935;
+            color: #fff;
+            border: none;
+            font-size: 14px;
+            line-height: 22px;
+            cursor: pointer;
         }
 
-        button.danger {
-            background: #d32f2f;
-        }
-
-            button.danger:active {
-                background: #b71c1c;
+            .delete-card:active {
+                background: #c62828;
             }
-
     </style>
-
-
-
 </head>
 
 <body>
@@ -133,33 +129,25 @@
     <div class="container" style="margin-left: 5%; width: 35%;">
         <h2>Preposition-Phrasal Verb</h2>
 
-        <!-- Add Dropdown Option -->
         <div class="row">
             <input id="newOption" placeholder="Add dropdown value" />
             <button style="width: 20%; margin-left: 40%;" onclick="addOption()">Add</button>
         </div>
 
-        <!-- Dropdown -->
         <div class="row">
             <select id="dropdown" onchange="renderCards()"></select>
         </div>
 
-        <!-- Add Text Attached to Dropdown -->
         <div class="row">
             <input id="cardText" placeholder="Add text for selected dropdown" />
             <button style="width: 20%; margin-left: 40%;" onclick="addCard()">Save</button>
-            <button class="danger" style="width: 20%; margin-left: 40%;" onclick="deleteDropdown()">
-                X
-            </button>
+            <button class="danger" style="width: 20%; margin-left: 40%;" onclick="deleteDropdown()">X</button>
         </div>
-
-        <!-- Cards -->
     </div>
-    <div id="cardContainer" class="cards container" style="width: 50%;
-    margin-right: 6%;
-    margin-top: -42%;
-    max-height: 100px;"></div>
 
+    <div id="cardContainer" class="cards container"
+         style="width: 50%; margin-right: 6%; margin-top: -42%; max-height: 100px;">
+    </div>
 
     <script>
         let data = JSON.parse(localStorage.getItem("dropdownData")) || {};
@@ -203,6 +191,7 @@
             renderCards();
         }
 
+        // 🔥 UPDATED (logic same, only extended)
         function renderCards() {
             const container = document.getElementById("cardContainer");
             container.innerHTML = "";
@@ -210,35 +199,40 @@
             const selected = dropdown.value;
             if (!selected) return;
 
-            data[selected].forEach(item => {
+            data[selected].forEach((item, index) => {
                 const div = document.createElement("div");
                 div.className = "card";
-                div.innerHTML = `<strong>${item}</strong><small>${selected}</small>`;
+                div.innerHTML = `
+                            <button class="delete-card" onclick="deleteCard('${selected}', ${index})"></button>
+                            <strong>${item}</strong>
+                            <small>${selected}</small>
+                        `;
                 container.appendChild(div);
             });
         }
-
-        // Init
-        loadDropdown();
-        renderCards();
 
         function deleteDropdown() {
             const selected = dropdown.value;
             if (!selected) return;
 
-            const confirmDelete = confirm(
-                `Delete "${selected}" and all its data?`
-            );
+            if (!confirm(`Delete "${selected}" and all its data?`)) return;
 
-            if (!confirmDelete) return;
-
-            // Remove dropdown data
             delete data[selected];
-
             saveData();
             loadDropdown();
             renderCards();
         }
+
+        // 🔥 NEW FUNCTION
+        function deleteCard(dropdownKey, index) {
+            if (!confirm("Delete this card?")) return;
+            data[dropdownKey].splice(index, 1);
+            saveData();
+            renderCards();
+        }
+
+        loadDropdown();
+        renderCards();
     </script>
 
 </body>
