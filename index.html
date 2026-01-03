@@ -5,235 +5,312 @@
 
     <style>
         * {
-            box-sizing: border-box;
-        }
+    box-sizing: border-box;
+}
 
-        body {
-            margin: 0;
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, Roboto, Arial, sans-serif;
-            background: #f5f5f5;
-            color: #212121;
-        }
+/* PAGE */
+body {
+    margin: 0;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, Roboto, Arial, sans-serif;
+    background: #eef1f5;
+    color: #212121;
+}
 
-        .container {
-            max-width: 480px;
-            margin: 0 auto;
-            min-height: 100vh;
-            padding: 12px;
-        }
+/* PAGE WRAPPER */
+.page {
+    max-width: 1200px;
+    margin: auto;
+    padding: 16px;
+}
 
-        h2 {
-            font-size: 16px;
-            font-weight: 600;
-            text-align: center;
-            padding: 12px 0;
-            margin: 0 0 10px 0;
-        }
+/* HEADING */
+h2 {
+    font-size: 18px;
+    font-weight: 600;
+    text-align: center;
+    margin-bottom: 16px;
+}
 
-        .row {
-            background: #ffffff;
-            border-radius: 8px;
-            padding: 12px;
-            margin-bottom: 10px;
-        }
+/* MAIN LAYOUT */
+.main {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+}
 
-        input, select {
-            width: 100%;
-            padding: 12px;
-            font-size: 14px;
-            border-radius: 6px;
-            border: 1px solid #cfcfcf;
-            background: #fff;
-            outline: none;
-        }
+/* LEFT PANEL */
+.left-panel {
+    width: 40%;
+}
 
-            input:focus, select:focus {
-                border-color: #1976d2;
-            }
+/* RIGHT PANEL (FIXED SIZE BOX) */
+.right-panel {
+    width: 60%;
+    background: #ffffff;
+    border-radius: 10px;
+    padding: 12px;
+    box-shadow: 0 6px 18px rgba(0,0,0,.08);
 
-        button {
-            width: 100%;
-            margin-top: 10px;
-            padding: 12px;
-            font-size: 14px;
-            font-weight: 500;
-            border-radius: 6px;
-            border: none;
-            background: #1976d2;
-            color: white;
-            cursor: pointer;
-        }
+    height: 420px;              /* 🔒 FIXED HEIGHT */
+    display: flex;
+    flex-direction: column;
+}
 
-            button:active {
-                background: #1565c0;
-            }
+/* RIGHT PANEL TITLE */
+.right-panel h3 {
+    margin: 0 0 10px 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #374151;
+}
 
-            button.danger {
-                background: #d32f2f;
-            }
+/* FORM SECTIONS */
+.row {
+    background: #ffffff;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.05);
+}
 
-                button.danger:active {
-                    background: #b71c1c;
-                }
+/* INPUTS */
+input,
+select {
+    width: 100%;
+    padding: 12px;
+    font-size: 14px;
+    border-radius: 6px;
+    border: 1px solid #cfd4dc;
+    background: #ffffff;
+    outline: none;
+}
 
-        /* Cards */
-        .cards {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
+input:focus,
+select:focus {
+    border-color: #2563eb;
+}
 
-        .card {
-            background: #ffffff;
-            border-radius: 8px;
-            padding: 12px;
-            border-left: 4px solid #1976d2;
-            position: relative; /* NEW */
-        }
+/* BUTTONS */
+button {
+    width: 100%;
+    margin-top: 10px;
+    padding: 12px;
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: 6px;
+    border: none;
+    background: #2563eb;
+    color: white;
+    cursor: pointer;
+}
 
-            .card strong {
-                font-size: 14px;
-                display: block;
-                margin-bottom: 4px;
-            }
+button:active {
+    background: #1e40af;
+}
 
-            .card small {
-                font-size: 12px;
-                color: #757575;
-            }
+/* DANGER BUTTON */
+button.danger {
+    background: #dc2626;
+}
 
-        /* 🔥 NEW: delete card button */
-        .delete-card {
-            position: absolute;
-            top: 6px;
-            right: 6px;
-            width: 22px;
-            height: 22px;
-            border-radius: 50%;
-            background: #e53935;
-            color: #fff;
-            border: none;
-            font-size: 14px;
-            line-height: 22px;
-            cursor: pointer;
-        }
+button.danger:active {
+    background: #b91c1c;
+}
 
-            .delete-card:active {
-                background: #c62828;
-            }
+/* CARD LIST (SCROLL AREA) */
+.cards {
+    flex: 1;                    /* takes remaining height */
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+
+    overflow-y: auto;           /* 🔥 SCROLL HERE */
+    padding-right: 6px;
+}
+
+/* CARD */
+.card {
+    background: #f9fafb;
+    border-radius: 8px;
+    padding: 12px;
+    border-left: 4px solid #2563eb;
+    position: relative;
+}
+
+.card strong {
+    font-size: 14px;
+    display: block;
+    margin-bottom: 4px;
+}
+
+.card small {
+    font-size: 12px;
+    color: #6b7280;
+}
+
+/* DELETE CARD BUTTON */
+.delete-card {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #ef4444;
+    color: #fff;
+    border: none;
+    font-size: 14px;
+    line-height: 22px;
+    cursor: pointer;
+}
+
+.delete-card:active {
+    background: #dc2626;
+}
+
+/* SCROLLBAR */
+.cards::-webkit-scrollbar {
+    width: 6px;
+}
+
+.cards::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 6px;
+}
+
+/* ===================== */
+/* MOBILE RESPONSIVE */
+/* ===================== */
+@@media (max-width: 768px) {
+    .main {
+        flex-direction: column;
+    }
+
+    .left-panel,
+    .right-panel {
+        width: 100%;
+    }
+
+    .right-panel {
+        height: auto;
+        max-height: 60vh;        /* still scrollable on mobile */
+    }
+}
+
     </style>
 </head>
 
 <body>
 
-    <div class="container" style="margin-left: 5%; width: 35%;">
-        <h2>Preposition-Phrasal Verb</h2>
+<div class="page">
+    <h2>Preposition – Phrasal Verb</h2>
 
-        <div class="row">
-            <input id="newOption" placeholder="Add dropdown value" />
-            <button style="width: 20%; margin-left: 40%;" onclick="addOption()">Add</button>
+    <div class="main">
+
+        <!-- LEFT -->
+        <div class="left-panel">
+            <div class="row">
+                <input id="newOption" placeholder="Add dropdown value" />
+                <button onclick="addOption()">Add</button>
+            </div>
+
+            <div class="row">
+                <select id="dropdown" onchange="renderCards()"></select>
+            </div>
+
+            <div class="row">
+                <input id="cardText" placeholder="Add text for selected dropdown" />
+                <button onclick="addCard()">Save</button>
+                <button class="danger" onclick="deleteDropdown()">Delete Dropdown</button>
+            </div>
         </div>
 
-        <div class="row">
-            <select id="dropdown" onchange="renderCards()"></select>
+        <!-- RIGHT -->
+        <div class="right-panel">
+            <h3>Saved Cards</h3>
+            <div id="cardContainer" class="cards"></div>
         </div>
 
-        <div class="row">
-            <input id="cardText" placeholder="Add text for selected dropdown" />
-            <button style="width: 20%; margin-left: 40%;" onclick="addCard()">Save</button>
-            <button class="danger" style="width: 20%; margin-left: 40%;" onclick="deleteDropdown()">X</button>
-        </div>
     </div>
+</div>
 
-    <div id="cardContainer" class="cards container"
-         style="width: 50%; margin-right: 6%; margin-top: -42%; max-height: 100px;">
-    </div>
+<script>
+    let data = JSON.parse(localStorage.getItem("dropdownData")) || {};
+    const dropdown = document.getElementById("dropdown");
 
-    <script>
-        let data = JSON.parse(localStorage.getItem("dropdownData")) || {};
+    function saveData() {
+        localStorage.setItem("dropdownData", JSON.stringify(data));
+    }
 
-        const dropdown = document.getElementById("dropdown");
+    function loadDropdown() {
+        dropdown.innerHTML = "";
+        Object.keys(data).forEach(key => {
+            const opt = document.createElement("option");
+            opt.value = key;
+            opt.textContent = key;
+            dropdown.appendChild(opt);
+        });
+    }
 
-        function saveData() {
-            localStorage.setItem("dropdownData", JSON.stringify(data));
-        }
+    function addOption() {
+        const value = document.getElementById("newOption").value.trim();
+        if (!value || data[value]) return;
+        data[value] = [];
+        saveData();
+        loadDropdown();
+        dropdown.value = value;
+        document.getElementById("newOption").value = "";
+        renderCards();
+    }
 
-        function loadDropdown() {
-            dropdown.innerHTML = "";
-            Object.keys(data).forEach(key => {
-                const opt = document.createElement("option");
-                opt.value = key;
-                opt.textContent = key;
-                dropdown.appendChild(opt);
-            });
-        }
+    function addCard() {
+        const text = document.getElementById("cardText").value.trim();
+        const selected = dropdown.value;
+        if (!text || !selected) return;
+        data[selected].push(text);
+        saveData();
+        document.getElementById("cardText").value = "";
+        renderCards();
+    }
 
-        function addOption() {
-            const value = document.getElementById("newOption").value.trim();
-            if (!value || data[value]) return;
+    function renderCards() {
+        const container = document.getElementById("cardContainer");
+        container.innerHTML = "";
+        const selected = dropdown.value;
+        if (!selected) return;
 
-            data[value] = [];
-            saveData();
-            loadDropdown();
-            dropdown.value = value;
-            document.getElementById("newOption").value = "";
-            renderCards();
-        }
+        data[selected].forEach((item, index) => {
+            const div = document.createElement("div");
+            div.className = "card";
+            div.innerHTML = `
+                <button class="delete-card" onclick="deleteCard('${selected}', ${index})"></button>
+                <strong>${item}</strong>
+                <small>${selected}</small>
+            `;
+            container.appendChild(div);
+        });
+    }
 
-        function addCard() {
-            const text = document.getElementById("cardText").value.trim();
-            const selected = dropdown.value;
-            if (!text || !selected) return;
-
-            data[selected].push(text);
-            saveData();
-            document.getElementById("cardText").value = "";
-            renderCards();
-        }
-
-        // 🔥 UPDATED (logic same, only extended)
-        function renderCards() {
-            const container = document.getElementById("cardContainer");
-            container.innerHTML = "";
-
-            const selected = dropdown.value;
-            if (!selected) return;
-
-            data[selected].forEach((item, index) => {
-                const div = document.createElement("div");
-                div.className = "card";
-                div.innerHTML = `
-                            <button class="delete-card" onclick="deleteCard('${selected}', ${index})"></button>
-                            <strong>${item}</strong>
-                            <small>${selected}</small>
-                        `;
-                container.appendChild(div);
-            });
-        }
-
-        function deleteDropdown() {
-            const selected = dropdown.value;
-            if (!selected) return;
-
-            if (!confirm(`Delete "${selected}" and all its data?`)) return;
-
-            delete data[selected];
-            saveData();
-            loadDropdown();
-            renderCards();
-        }
-
-        // 🔥 NEW FUNCTION
-        function deleteCard(dropdownKey, index) {
-            if (!confirm("Delete this card?")) return;
-            data[dropdownKey].splice(index, 1);
-            saveData();
-            renderCards();
-        }
-
+    function deleteDropdown() {
+        const selected = dropdown.value;
+        if (!selected) return;
+        if (!confirm(`Delete "${selected}" and all its data?`)) return;
+        delete data[selected];
+        saveData();
         loadDropdown();
         renderCards();
-    </script>
+    }
+
+    function deleteCard(key, index) {
+        if (!confirm("Delete this card?")) return;
+        data[key].splice(index, 1);
+        saveData();
+        renderCards();
+    }
+
+    loadDropdown();
+    renderCards();
+</script>
 
 </body>
 </html>
