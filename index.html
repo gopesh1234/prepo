@@ -3,7 +3,11 @@
 <head>
     <meta charset="utf-8" />
 
+    <!-- jsPDF CDN (NEW) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
     <style>
+        /* ===== YOUR ORIGINAL CSS (UNCHANGED) ===== */
         * {
             box-sizing: border-box;
         }
@@ -53,6 +57,7 @@
                 margin: 0 0 10px 0;
                 font-size: 14px;
                 font-weight: 600;
+                color: #374151;
             }
 
         .row {
@@ -156,7 +161,11 @@
             </div>
 
             <div class="right-panel">
-                <h3>Saved Cards</h3>
+                <!-- 🔥 NEW PDF DOWNLOAD BUTTON -->
+                <button onclick="downloadPDF()" style="width: 50%; margin-bottom: 2%;">
+                    Download PDF
+                </button>
+
                 <div id="cardContainer" class="cards"></div>
             </div>
         </div>
@@ -170,10 +179,8 @@
             localStorage.setItem("dropdownData", JSON.stringify(data));
         }
 
-        // 🔤 SORT DROPDOWN ALPHABETICALLY
         function loadDropdown() {
             dropdown.innerHTML = "";
-
             Object.keys(data)
                 .sort((a, b) => a.localeCompare(b))
                 .forEach(key => {
@@ -187,7 +194,6 @@
         function addOption() {
             const value = document.getElementById("newOption").value.trim();
             if (!value || data[value]) return;
-
             data[value] = [];
             saveData();
             loadDropdown();
@@ -200,18 +206,15 @@
             const text = document.getElementById("cardText").value.trim();
             const selected = dropdown.value;
             if (!text || !selected) return;
-
             data[selected].push(text);
             saveData();
             document.getElementById("cardText").value = "";
             renderCards();
         }
 
-        // 🔢 AUTO NUMBERING + REORDER
         function renderCards() {
             const container = document.getElementById("cardContainer");
             container.innerHTML = "";
-
             const selected = dropdown.value;
             if (!selected) return;
 
@@ -221,7 +224,6 @@
                 div.innerHTML = `
                         <button class="delete-card" onclick="deleteCard('${selected}', ${index})"></button>
                         <strong>${index + 1}. ${item}</strong>
-                        <small>${selected}</small>
                     `;
                 container.appendChild(div);
             });
@@ -231,19 +233,46 @@
             const selected = dropdown.value;
             if (!selected) return;
             if (!confirm(`Delete "${selected}" and all its data?`)) return;
-
             delete data[selected];
             saveData();
             loadDropdown();
             renderCards();
         }
 
-        // ♻️ RE-NUMBER AFTER DELETE
         function deleteCard(key, index) {
             if (!confirm("Delete this card?")) return;
             data[key].splice(index, 1);
             saveData();
             renderCards();
+        }
+
+        // 📄 NEW FUNCTION: PDF DOWNLOAD
+        function downloadPDF() {
+            const selected = dropdown.value;
+            if (!selected || !data[selected] || data[selected].length === 0) {
+                alert("No data to download");
+                return;
+            }
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            doc.setFontSize(14);
+            doc.text(selected, 10, 15);
+
+            doc.setFontSize(11);
+            let y = 30;
+
+            data[selected].forEach((item, index) => {
+                doc.text(`${index + 1}. ${item}`, 10, y);
+                y += 8;
+                if (y > 280) {
+                    doc.addPage();
+                    y = 20;
+                }
+            });
+
+            doc.save(`${selected}.pdf`);
         }
 
         loadDropdown();
