@@ -221,34 +221,43 @@
         function filterCards() {
             const query = document.getElementById("cardText").value.toLowerCase();
             const container = document.getElementById("cardContainer");
-            const selected = dropdown.value;
-
             container.innerHTML = "";
-            if (!selected) return;
 
-            data[selected]
-                .filter(item => item.toLowerCase().includes(query))
-                .forEach((item, index) => {
-                    const div = document.createElement("div");
-                    div.className = "card";
+            // If search box empty → normal dropdown render
+            if (!query) {
+                renderCards();
+                return;
+            }
 
-                    div.innerHTML = `
-                        <div class="card-actions">
-                            <button class="move-up"
-                                onclick="moveCard('${selected}', ${index}, -1)"
-                                ${index === 0 ? "disabled" : ""}>▲</button>
+            Object.keys(data).sort().forEach(dropKey => {
+                data[dropKey].forEach((item, index) => {
+                    if (item.toLowerCase().includes(query)) {
 
-                            <button class="move-down"
-                                onclick="moveCard('${selected}', ${index}, 1)"
-                                ${index === data[selected].length - 1 ? "disabled" : ""}>▼</button>
+                        const div = document.createElement("div");
+                        div.className = "card";
 
-                            <button class="delete-card"
-                                onclick="deleteCard('${selected}', ${index})">✖</button>
-                        </div>
-                        <strong>${index + 1}. ${item}</strong>
-                    `;
-                    container.appendChild(div);
+                        div.innerHTML = `
+                            <small style="color:#2563eb;font-weight:600;">
+                                ${dropKey}
+                            </small>
+
+                            <div class="card-actions">
+                                <button class="move-up" disabled>▲</button>
+                                <button class="move-down" disabled>▼</button>
+                                <button class="delete-card"
+                                    onclick="deleteCard('${dropKey}', ${index})">✖</button>
+                            </div>
+
+                            <strong>${item}</strong>
+                        `;
+                        container.appendChild(div);
+                    }
                 });
+            });
+
+            if (!container.children.length) {
+                container.innerHTML = `<p style="color:#6b7280;">No match found</p>`;
+            }
         }
 
 
