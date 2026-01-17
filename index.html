@@ -163,7 +163,7 @@
                 </div>
 
                 <div class="row">
-                    <input id="cardText" placeholder="Add text for selected dropdown" oninput="filterCards()" />
+                    <input id="cardText" oninput="filterCards()" value="vocab - " />
                     <button onclick="addCard()">Save</button>
                     <button class="danger" onclick="deleteDropdown()">Delete Dropdown</button>
                 </div>
@@ -182,6 +182,7 @@
     <script>
         let data = JSON.parse(localStorage.getItem("dropdownData")) || {};
         const dropdown = document.getElementById("dropdown");
+        const PREFIX = "vocab - ";
 
         function saveData() {
             localStorage.setItem("dropdownData", JSON.stringify(data));
@@ -209,47 +210,79 @@
         }
 
         function addCard() {
-            const text = document.getElementById("cardText").value.trim();
+            const input = document.getElementById("cardText");
+            let text = input.value.trim();
+
+            //if (!text.startsWith(PREFIX)) return;
+
+            text = text.slice(PREFIX.length).trim();
             const selected = dropdown.value;
+
             if (!text || !selected) return;
-            data[selected].push(text);
+
+            data[selected].push(PREFIX + text);
             saveData();
-            document.getElementById("cardText").value = "";
+            input.value = PREFIX;
             renderCards();
         }
 
         function filterCards() {
-            const query = document.getElementById("cardText").value.toLowerCase();
+            const input = document.getElementById("cardText");
+            let value = input.value;
+
+            // Always enforce prefix
+            // if (!value.startsWith(PREFIX)) {
+            //     input.value = PREFIX;
+            //     return;
+            // }
+
+            const searchText = value.slice(PREFIX.length).trim().toLowerCase();
+
+            /* 🔹 AUTO-SELECT DROPDOWN BASED ON FIRST LETTER */
+            if (searchText.length === 1) {
+                const firstChar = searchText[0];
+
+                const match = [...dropdown.options].find(opt =>
+                    opt.value.toLowerCase().startsWith(firstChar)
+                );
+
+                if (match) {
+                    dropdown.value = match.value;
+                    renderCards();
+                }
+            }
+
             const container = document.getElementById("cardContainer");
             container.innerHTML = "";
 
-            // If search box empty → normal dropdown render
-            if (!query) {
+            // If nothing typed → normal render
+            if (!searchText) {
                 renderCards();
                 return;
             }
 
+            /* 🔹 SEARCH ACROSS ALL DROPDOWNS */
             Object.keys(data).sort().forEach(dropKey => {
                 data[dropKey].forEach((item, index) => {
-                    if (item.toLowerCase().includes(query)) {
+                    if (item.toLowerCase().includes(searchText)) {
 
                         const div = document.createElement("div");
                         div.className = "card";
 
                         div.innerHTML = `
-                            <small style="color:#2563eb;font-weight:600;">
-                                ${dropKey}
-                            </small>
+                                <small style="color:#2563eb;font-weight:600;">
+                                    ${dropKey}
+                                </small>
 
-                            <div class="card-actions">
-                                <button class="move-up" disabled>▲</button>
-                                <button class="move-down" disabled>▼</button>
-                                <button class="delete-card"
-                                    onclick="deleteCard('${dropKey}', ${index})">✖</button>
-                            </div>
+                                <div class="card-actions">
+                                    <button class="move-up" disabled>▲</button>
+                                    <button class="move-down" disabled>▼</button>
+                                    <button class="delete-card"
+                                        onclick="deleteCard('${dropKey}', ${index})">✖</button>
+                                </div>
 
-                            <strong>${item}</strong>
-                        `;
+                                <strong>${item}</strong>
+                            `;
                         container.appendChild(div);
                     }
                 });
@@ -259,7 +292,6 @@
                 container.innerHTML = `<p style="color:#6b7280;">No match found</p>`;
             }
         }
-
 
         function renderCards() {
             const container = document.getElementById("cardContainer");
@@ -272,22 +304,21 @@
                 div.className = "card";
 
                 div.innerHTML = `
-                                <div class="card-actions">
-                                    <button class="move-up"
-                                        onclick="moveCard('${selected}', ${index}, -1)"
-                                        ${index === 0 ? "disabled" : ""}>▲</button>
+                        <div class="card-actions">
+                            <button class="move-up"
+                                onclick="moveCard('${selected}', ${index}, -1)"
+                                ${index === 0 ? "disabled" : ""}>▲</button>
 
-                                    <button class="move-down"
-                                        onclick="moveCard('${selected}', ${index}, 1)"
-                                        ${index === data[selected].length - 1 ? "disabled" : ""}>▼</button>
+                            <button class="move-down"
+                                onclick="moveCard('${selected}', ${index}, 1)"
+                                ${index === data[selected].length - 1 ? "disabled" : ""}>▼</button>
 
-                                    <button class="delete-card"
-                                        onclick="deleteCard('${selected}', ${index})">✖</button>
-                                </div>
+                            <button class="delete-card"
+                                onclick="deleteCard('${selected}', ${index})">✖</button>
+                        </div>
 
-                                <strong>${index + 1}. ${item}</strong>
-                            `;
-
+                        <strong>${index + 1}. ${item}</strong>
+                    `;
                 container.appendChild(div);
             });
         }
@@ -326,16 +357,13 @@
 
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
-
             let firstPage = true;
 
             Object.keys(data).sort().forEach(dropdownKey => {
                 const items = data[dropdownKey];
                 if (!items.length) return;
 
-                if (!firstPage) {
-                    doc.addPage();
-                }
+                if (!firstPage) doc.addPage();
                 firstPage = false;
 
                 doc.setFontSize(14);
@@ -355,13 +383,13 @@
                 });
             });
 
-            doc.save("All_Data.pdf");
+            doc.save("Hi_Kumar_" + Date.now() + ".pdf");
         }
-
 
         loadDropdown();
         renderCards();
     </script>
+
 
 </body>
 </html>
