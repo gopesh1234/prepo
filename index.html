@@ -3,7 +3,6 @@
 <head>
     <meta charset="utf-8" />
 
-    <!-- jsPDF CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
     <style>
@@ -149,8 +148,6 @@
 <body>
 
     <div class="page">
-        <h2>Preposition – Phrasal Verb</h2>
-
         <div class="main">
             <div class="left-panel">
                 <div class="row">
@@ -198,54 +195,45 @@
             localStorage.setItem("dropdownData", JSON.stringify(data));
         }
 
+        function sortCards(arr) {
+            arr.sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
+        }
+
         function autoFilter() {
             const input = document.getElementById("cardText").value.toLowerCase().trim();
             const container = document.getElementById("cardContainer");
             container.innerHTML = "";
 
-            // If textbox empty → normal dropdown view
             if (!input) {
                 renderCards();
                 return;
             }
 
-            // ✅ FIRST LETTER ONLY
             const firstLetter = input.charAt(0);
 
-            // ✅ AUTO-ADJUST MAIN DROPDOWN (dynamic)
             const dropdownOptions = Array.from(dropdown.options).map(o => o.value);
-
             const matched = dropdownOptions.find(opt =>
                 opt.toLowerCase().startsWith(firstLetter)
             );
 
-            if (matched) {
-                dropdown.value = matched;
-            }
+            if (matched) dropdown.value = matched;
 
-            // 🔍 FILTER CARDS USING FULL TEXT
             Object.keys(data).sort().forEach(dropKey => {
                 data[dropKey].forEach((item, index) => {
                     if (item.toLowerCase().includes(input)) {
-
                         const div = document.createElement("div");
                         div.className = "card";
 
                         div.innerHTML = `
-                                    <small style="color:#2563eb;font-weight:600;">
-                                        ${dropKey}
-                                    </small>
-
-                                    <div class="card-actions">
-                                        <button disabled>▲</button>
-                                        <button disabled>▼</button>
-                                        <button class="delete-card"
-                                            onclick="deleteCard('${dropKey}', ${index})">✖</button>
-                                    </div>
-
-                                    <strong>${item}</strong>
-                                `;
-
+                            <small style="color:#2563eb;font-weight:600;">${dropKey}</small>
+                            <div class="card-actions">
+                                <button disabled>▲</button>
+                                <button disabled>▼</button>
+                                <button class="delete-card"
+                                    onclick="deleteCard('${dropKey}', ${index})">✖</button>
+                            </div>
+                            <strong>${item}</strong>
+                        `;
                         container.appendChild(div);
                     }
                 });
@@ -255,7 +243,6 @@
                 container.innerHTML = `<p style="color:#6b7280;">No match found</p>`;
             }
         }
-
 
         function loadDropdown() {
             dropdown.innerHTML = "";
@@ -270,6 +257,7 @@
         function addOption() {
             const value = document.getElementById("newOption").value.trim();
             if (!value || data[value]) return;
+
             data[value] = [];
             saveData();
             loadDropdown();
@@ -281,7 +269,6 @@
         function addCard() {
             const textInput = document.getElementById("cardText");
             const category = document.getElementById("categoryFilter").value;
-
             const selected = dropdown.value;
 
             const text = textInput.value.trim();
@@ -289,104 +276,52 @@
 
             const finalText = category ? `${category} – ${text}` : text;
 
-            data[selected].push(finalText);
+            data[selected].unshift(finalText);
+            sortCards(data[selected]);
             saveData();
 
             textInput.value = "";
             renderCards();
         }
 
-
-
-        function filterByCategory() {
-            const category = document.getElementById("categoryFilter").value.toLowerCase();
-            const container = document.getElementById("cardContainer");
-            container.innerHTML = "";
-
-            if (!category) {
-                renderCards();
-                return;
-            }
-
-            Object.keys(data).sort().forEach(dropKey => {
-                if (dropKey.toLowerCase().startsWith(category)) {
-                    data[dropKey].forEach((item, index) => {
-                        const div = document.createElement("div");
-                        div.className = "card";
-
-                        div.innerHTML = `
-                                    <small style="color:#2563eb;font-weight:600;">
-                                        ${dropKey}
-                                    </small>
-
-                                    <div class="card-actions">
-                                        <button disabled>▲</button>
-                                        <button disabled>▼</button>
-                                        <button class="delete-card"
-                                            onclick="deleteCard('${dropKey}', ${index})">✖</button>
-                                    </div>
-
-                                    <strong>${item}</strong>
-                                `;
-                        container.appendChild(div);
-                    });
-                }
-            });
-
-            if (!container.children.length) {
-                container.innerHTML = `<p style="color:#6b7280;">No data found</p>`;
-            }
-        }
-
         function renderCards() {
-            //document.getElementById("categoryFilter").value = "";
-
             const container = document.getElementById("cardContainer");
             container.innerHTML = "";
             const selected = dropdown.value;
             if (!selected) return;
+
+            sortCards(data[selected]); // ensure sorted
 
             data[selected].forEach((item, index) => {
                 const div = document.createElement("div");
                 div.className = "card";
 
                 div.innerHTML = `
-                            <div class="card-actions">
-                                <button class="move-up"
-                                    onclick="moveCard('${selected}', ${index}, -1)"
-                                    ${index === 0 ? "disabled" : ""}>▲</button>
+                    <div class="card-actions">
+                        <button class="move-up"
+                            onclick="moveCard('${selected}', ${index}, -1)"
+                            ${index === 0 ? "disabled" : ""}>▲</button>
 
-                                <button class="move-down"
-                                    onclick="moveCard('${selected}', ${index}, 1)"
-                                    ${index === data[selected].length - 1 ? "disabled" : ""}>▼</button>
+                        <button class="move-down"
+                            onclick="moveCard('${selected}', ${index}, 1)"
+                            ${index === data[selected].length - 1 ? "disabled" : ""}>▼</button>
 
-                                <button class="delete-card"
-                                    onclick="deleteCard('${selected}', ${index})">✖</button>
-                            </div>
-
-                            <strong>${index + 1}. ${item}</strong>
-                        `;
+                        <button class="delete-card"
+                            onclick="deleteCard('${selected}', ${index})">✖</button>
+                    </div>
+                    <strong>${index + 1}. ${item}</strong>
+                `;
                 container.appendChild(div);
             });
         }
-
 
         function moveCard(key, index, direction) {
             const arr = data[key];
             const newIndex = index + direction;
             if (newIndex < 0 || newIndex >= arr.length) return;
+
             [arr[index], arr[newIndex]] = [arr[newIndex], arr[index]];
             saveData();
-            renderCards();
-        }
-
-        function deleteDropdown() {
-            const selected = dropdown.value;
-            if (!selected) return;
-            if (!confirm(`Delete "${selected}" and all its data?`)) return;
-            delete data[selected];
-            saveData();
-            loadDropdown();
             renderCards();
         }
 
@@ -395,6 +330,45 @@
             data[key].splice(index, 1);
             saveData();
             renderCards();
+        }
+
+        function deleteDropdown() {
+            const selected = dropdown.value;
+            if (!selected) return;
+            if (!confirm(`Delete "${selected}" and all its data?`)) return;
+
+            delete data[selected];
+            saveData();
+            loadDropdown();
+            renderCards();
+        }
+
+        function filterByCategory() {
+            const category = document.getElementById("categoryFilter").value.toLowerCase();
+            const container = document.getElementById("cardContainer");
+            container.innerHTML = "";
+
+            Object.keys(data).sort().forEach(dropKey => {
+                if (dropKey.toLowerCase().startsWith(category)) {
+                    sortCards(data[dropKey]);
+                    data[dropKey].forEach((item, index) => {
+                        const div = document.createElement("div");
+                        div.className = "card";
+
+                        div.innerHTML = `
+                            <small style="color:#2563eb;font-weight:600;">${dropKey}</small>
+                            <div class="card-actions">
+                                <button disabled>▲</button>
+                                <button disabled>▼</button>
+                                <button class="delete-card"
+                                    onclick="deleteCard('${dropKey}', ${index})">✖</button>
+                            </div>
+                            <strong>${item}</strong>
+                        `;
+                        container.appendChild(div);
+                    });
+                }
+            });
         }
 
         function downloadPDF() {
@@ -408,8 +382,10 @@
             let firstPage = true;
 
             Object.keys(data).sort().forEach(dropdownKey => {
-                const items = data[dropdownKey];
+                const items = [...data[dropdownKey]];
                 if (!items.length) return;
+
+                sortCards(items);
 
                 if (!firstPage) doc.addPage();
                 firstPage = false;
@@ -421,8 +397,15 @@
                 let y = 30;
 
                 items.forEach((item, index) => {
-                    doc.text(`${index + 1}. ${item}`, 10, y);
-                    y += 8;
+                    const text = `${index + 1}. ${item}`;
+                    const wrapped = doc.splitTextToSize(text, 180);
+
+                    doc.text(wrapped, 10, y);
+                    y += wrapped.length * 7;
+
+                    doc.setDrawColor(200);
+                    doc.line(10, y, 200, y);
+                    y += 5;
 
                     if (y > 280) {
                         doc.addPage();
@@ -433,11 +416,9 @@
 
             doc.save("Hi_Kumar_" + Date.now() + ".pdf");
         }
-
         loadDropdown();
         renderCards();
     </script>
-
 
 </body>
 </html>
