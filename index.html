@@ -23,17 +23,9 @@
             padding: 16px;
         }
 
-        h2 {
-            font-size: 18px;
-            font-weight: 600;
-            text-align: center;
-            margin-bottom: 16px;
-        }
-
         .main {
             display: flex;
             gap: 16px;
-            align-items: flex-start;
         }
 
         .left-panel {
@@ -41,7 +33,7 @@
         }
 
         .right-panel {
-            width: 40%;
+            width: 90%;
             background: #ffffff;
             border-radius: 10px;
             padding: 12px;
@@ -65,11 +57,12 @@
             font-size: 14px;
             border-radius: 6px;
             border: 1px solid #cfd4dc;
+            margin-bottom: 8px;
         }
 
         button {
             width: 100%;
-            margin-top: 10px;
+            margin-top: 6px;
             padding: 12px;
             border-radius: 6px;
             border: none;
@@ -94,38 +87,42 @@
             background: #f9fafb;
             border-radius: 8px;
             padding: 12px;
-            border-left: 4px solid #2563eb;
+            border-left: 6px solid #2563eb;
         }
 
-        /* 🔥 BUTTON ROW */
+            /* 🆕 Difficulty colors */
+            .card.easy {
+                border-left-color: #16a34a;
+            }
+
+            .card.medium {
+                border-left-color: #eab308;
+            }
+
+            .card.hard {
+                border-left-color: #dc2626;
+            }
+
         .card-actions {
             display: flex;
             gap: 6px;
             margin-bottom: 6px;
-            width: 15%;
-            margin-left: 86%;
+            width: 20%;
+            margin-left: 80%;
         }
 
             .card-actions button {
-                flex: 1;
-                padding: 6px 0;
+                padding: 6px;
                 font-size: 12px;
                 border-radius: 4px;
-                margin-top: 0;
             }
 
-        .move-up,
-        .move-down {
-            background: #2563eb;
+        .edit-btn {
+            background: #059669;
         }
 
         .delete-card {
             background: #ef4444;
-        }
-
-        .card-actions button:disabled {
-            background: #9ca3af;
-            cursor: not-allowed;
         }
 
         @@media (max-width: 768px) {
@@ -139,7 +136,6 @@
 
             .right-panel {
                 height: auto;
-                max-height: 60vh;
             }
         }
     </style>
@@ -149,7 +145,9 @@
 
     <div class="page">
         <div class="main">
+
             <div class="left-panel">
+
                 <div class="row">
                     <input id="newOption" placeholder="Add dropdown value" />
                     <button onclick="addOption()">Add</button>
@@ -170,36 +168,33 @@
                         <option value="Grammar">Grammar</option>
                     </select>
                 </div>
-                <div class="row">
-                    <input id="cardText" placeholder="Add text for selected dropdown" oninput="autoFilter()" />
 
+                <div class="row">
+                    <!-- 🆕 Difficulty selector -->
+                    <select id="difficulty">
+                        <option value="easy">Easy</option>
+                        <option value="medium">Medium</option>
+                        <option value="hard">Hard</option>
+                    </select>
+
+                    <input id="cardText" placeholder="Add text for selected dropdown" oninput="autoFilter()" />
                     <button onclick="addCard()">Save</button>
                     <button class="danger" onclick="deleteDropdown()">Delete Dropdown</button>
                 </div>
+
             </div>
-        </div>
 
-        <div class="right-panel">
-            <button onclick="downloadPDF()" style="width:13%; margin-bottom:8px; margin-left: 85%;">
-                PDF
-            </button>
+            <div class="right-panel">
+                <button onclick="downloadPDF()" style="width:13%; margin-left:85%;">PDF</button>
+                <div id="cardContainer" class="cards"></div>
+            </div>
 
-            <div id="cardContainer" class="cards"></div>
         </div>
-    </div>
     </div>
 
     <script>
         let data = JSON.parse(localStorage.getItem("dropdownData")) || {};
         const dropdown = document.getElementById("dropdown");
-
-        function saveData() {
-            localStorage.setItem("dropdownData", JSON.stringify(data));
-        }
-
-        function sortCards(arr) {
-            arr.sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
-        }
 
         function autoFilter() {
             const input = document.getElementById("cardText").value.toLowerCase().trim();
@@ -213,16 +208,20 @@
 
             const firstLetter = input.charAt(0);
 
+            // 🔥 AUTO-CHANGE DROPDOWN BASED ON FIRST LETTER
             const dropdownOptions = Array.from(dropdown.options).map(o => o.value);
             const matched = dropdownOptions.find(opt =>
                 opt.toLowerCase().startsWith(firstLetter)
             );
-
             if (matched) dropdown.value = matched;
 
             Object.keys(data).sort().forEach(dropKey => {
                 data[dropKey].forEach((item, index) => {
-                    if (item.toLowerCase().includes(input)) {
+
+                    // ✅ WORKS FOR STRING + OBJECT DATA
+                    const text = typeof item === "string" ? item : item.text;
+
+                    if (text.toLowerCase().includes(input)) {
                         const div = document.createElement("div");
                         div.className = "card";
 
@@ -234,7 +233,7 @@
                                 <button class="delete-card"
                                     onclick="deleteCard('${dropKey}', ${index})">✖</button>
                             </div>
-                            <strong>${item}</strong>
+                            <strong>${text}</strong>
                         `;
                         container.appendChild(div);
                     }
@@ -246,178 +245,177 @@
             }
         }
 
+
+        /* 🆕 Backward compatibility */
+        function normalizeData() {
+            Object.keys(data).forEach(k => {
+                data[k] = data[k].map(item => {
+                    if (typeof item === "string") {
+                        return { text: item, difficulty: "easy" };
+                    }
+                    return item;
+                });
+            });
+        }
+        normalizeData();
+
+        function saveData() {
+            localStorage.setItem("dropdownData", JSON.stringify(data));
+        }
+
+        function sortCards(arr) {
+            arr.sort((a, b) => a.text.localeCompare(b.text, undefined, { sensitivity: "base" }));
+        }
+
         function loadDropdown() {
             dropdown.innerHTML = "";
-            Object.keys(data).sort().forEach(key => {
-                const opt = document.createElement("option");
-                opt.value = key;
-                opt.textContent = key;
-                dropdown.appendChild(opt);
+            Object.keys(data).sort().forEach(k => {
+                const o = document.createElement("option");
+                o.value = k; o.textContent = k;
+                dropdown.appendChild(o);
             });
         }
 
         function addOption() {
-            const value = document.getElementById("newOption").value.trim();
-            if (!value || data[value]) return;
-
-            data[value] = [];
-            saveData();
-            loadDropdown();
-            dropdown.value = value;
-            document.getElementById("newOption").value = "";
+            const v = newOption.value.trim();
+            if (!v || data[v]) return;
+            data[v] = [];
+            saveData(); loadDropdown();
+            dropdown.value = v;
+            newOption.value = "";
             renderCards();
         }
 
         function addCard() {
-            const textInput = document.getElementById("cardText");
-            const category = document.getElementById("categoryFilter").value;
-            const selected = dropdown.value;
+            const text = cardText.value.trim();
+            const cat = categoryFilter.value;
+            const diff = difficulty.value;
+            const sel = dropdown.value;
+            if (!text || !sel) return;
 
-            const text = textInput.value.trim();
-            if (!text || !selected) return;
-
-            const finalText = category ? `${category} – ${text}` : text;
-
-            data[selected].unshift(finalText);
-            sortCards(data[selected]);
+            const finalText = cat ? `${cat} – ${text}` : text;
+            data[sel].unshift({ text: finalText, difficulty: diff });
+            sortCards(data[sel]);
             saveData();
-
-            textInput.value = "";
+            cardText.value = "";
             renderCards();
         }
 
         function renderCards() {
-            const container = document.getElementById("cardContainer");
-            container.innerHTML = "";
-            const selected = dropdown.value;
-            if (!selected) return;
+            const c = document.getElementById("cardContainer");
+            c.innerHTML = "";
+            const sel = dropdown.value;
+            if (!sel) return;
 
-            sortCards(data[selected]); // ensure sorted
+            sortCards(data[sel]);
 
-            data[selected].forEach((item, index) => {
-                const div = document.createElement("div");
-                div.className = "card";
-
-                div.innerHTML = `
+            data[sel].forEach((item, i) => {
+                const d = document.createElement("div");
+                d.className = `card ${item.difficulty}`;
+                d.innerHTML = `
                     <div class="card-actions">
-                        <button class="move-up"
-                            onclick="moveCard('${selected}', ${index}, -1)"
-                            ${index === 0 ? "disabled" : ""}>▲</button>
-
-                        <button class="move-down"
-                            onclick="moveCard('${selected}', ${index}, 1)"
-                            ${index === data[selected].length - 1 ? "disabled" : ""}>▼</button>
-
-                        <button class="delete-card"
-                            onclick="deleteCard('${selected}', ${index})">✖</button>
+                        <button class="edit-btn" onclick="editCard(${i})">✏️</button>
+                        <button class="delete-card" onclick="deleteCard('${sel}',${i})">✖</button>
                     </div>
-                    <strong>${index + 1}. ${item}</strong>
+                    <strong>${i + 1}. ${item.text}</strong>
                 `;
-                container.appendChild(div);
+                c.appendChild(d);
             });
         }
 
-        function moveCard(key, index, direction) {
-            const arr = data[key];
-            const newIndex = index + direction;
-            if (newIndex < 0 || newIndex >= arr.length) return;
+        function editCard(i) {
+            const sel = dropdown.value;
+            const item = data[sel][i];
+            const card = document.getElementById("cardContainer").children[i];
 
-            [arr[index], arr[newIndex]] = [arr[newIndex], arr[index]];
+            card.innerHTML = `
+                <input id="editText" value="${item.text}">
+                <select id="editDiff">
+                    <option value="easy">Easy</option>
+                    <option value="medium">Medium</option>
+                    <option value="hard">Hard</option>
+                </select>
+                <button onclick="saveEdit(${i})">Save</button>
+                <button onclick="renderCards()">Cancel</button>
+            `;
+            editDiff.value = item.difficulty;
+        }
+
+        function saveEdit(i) {
+            const sel = dropdown.value;
+            data[sel][i] = {
+                text: editText.value.trim(),
+                difficulty: editDiff.value
+            };
             saveData();
             renderCards();
         }
 
-        function deleteCard(key, index) {
+        function deleteCard(k, i) {
             if (!confirm("Delete this card?")) return;
-            data[key].splice(index, 1);
-            saveData();
-            renderCards();
+            data[k].splice(i, 1);
+            saveData(); renderCards();
         }
 
         function deleteDropdown() {
-            const selected = dropdown.value;
-            if (!selected) return;
-            if (!confirm(`Delete "${selected}" and all its data?`)) return;
-
-            delete data[selected];
-            saveData();
-            loadDropdown();
-            renderCards();
+            const s = dropdown.value;
+            if (!s || !confirm(`Delete "${s}" and all its data?`)) return;
+            delete data[s];
+            saveData(); loadDropdown(); renderCards();
         }
 
         function filterByCategory() {
-            const category = document.getElementById("categoryFilter").value.toLowerCase();
-            const container = document.getElementById("cardContainer");
-            container.innerHTML = "";
-
-            Object.keys(data).sort().forEach(dropKey => {
-                if (dropKey.toLowerCase().startsWith(category)) {
-                    sortCards(data[dropKey]);
-                    data[dropKey].forEach((item, index) => {
-                        const div = document.createElement("div");
-                        div.className = "card";
-
-                        div.innerHTML = `
-                            <small style="color:#2563eb;font-weight:600;">${dropKey}</small>
-                            <div class="card-actions">
-                                <button disabled>▲</button>
-                                <button disabled>▼</button>
-                                <button class="delete-card"
-                                    onclick="deleteCard('${dropKey}', ${index})">✖</button>
-                            </div>
-                            <strong>${item}</strong>
-                        `;
-                        container.appendChild(div);
+            const cat = categoryFilter.value.toLowerCase();
+            const c = document.getElementById("cardContainer");
+            c.innerHTML = "";
+            Object.keys(data).sort().forEach(k => {
+                if (k.toLowerCase().startsWith(cat)) {
+                    data[k].forEach((item, i) => {
+                        const d = document.createElement("div");
+                        d.className = `card ${item.difficulty}`;
+                        d.innerHTML = `<strong>${item.text}</strong>`;
+                        c.appendChild(d);
                     });
                 }
             });
         }
 
         function downloadPDF() {
-            if (!Object.keys(data).length) {
-                alert("No data to download");
-                return;
-            }
-
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
-            let firstPage = true;
+            let first = true;
 
-            Object.keys(data).sort().forEach(dropdownKey => {
-                const items = [...data[dropdownKey]];
-                if (!items.length) return;
-
-                sortCards(items);
-
-                if (!firstPage) doc.addPage();
-                firstPage = false;
+            Object.keys(data).sort().forEach(k => {
+                if (!data[k].length) return;
+                if (!first) doc.addPage();
+                first = false;
 
                 doc.setFontSize(14);
-                doc.text(dropdownKey, 10, 15);
+                doc.setTextColor(0);
+                doc.text(k, 10, 15);
+                let y = 25;
 
-                doc.setFontSize(11);
-                let y = 30;
+                data[k].forEach((it, i) => {
+                    let col = [0, 0, 0];
+                    if (it.difficulty === "easy") col = [22, 163, 74];
+                    if (it.difficulty === "medium") col = [234, 179, 8];
+                    if (it.difficulty === "hard") col = [220, 38, 38];
 
-                items.forEach((item, index) => {
-                    const text = `${index + 1}. ${item}`;
-                    const wrapped = doc.splitTextToSize(text, 180);
+                    doc.setTextColor(...col);
+                    doc.text(`${i + 1}. ${it.text}`, 10, y);
+                    y += 8;
 
-                    doc.text(wrapped, 10, y);
-                    y += wrapped.length * 7;
-
-                    doc.setDrawColor(200);
+                    doc.setDrawColor(...col);
                     doc.line(10, y, 200, y);
-                    y += 5;
+                    y += 6;
 
-                    if (y > 280) {
-                        doc.addPage();
-                        y = 20;
-                    }
+                    if (y > 280) { doc.addPage(); y = 20; }
                 });
             });
 
             doc.save("Hi_Kumar_" + Date.now() + ".pdf");
         }
+
         loadDropdown();
         renderCards();
     </script>
