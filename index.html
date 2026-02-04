@@ -199,7 +199,9 @@
         const dropdown = document.getElementById("dropdown");
 
         function autoFilter() {
-            const input = document.getElementById("cardText").value.toLowerCase().trim();
+            const input = document.getElementById("cardText")
+                .value.toLowerCase().trim();
+
             const container = document.getElementById("cardContainer");
             container.innerHTML = "";
 
@@ -210,7 +212,7 @@
 
             const firstLetter = input.charAt(0);
 
-            // 🔥 AUTO-CHANGE DROPDOWN BASED ON FIRST LETTER
+            // Auto-select dropdown by first letter
             const dropdownOptions = Array.from(dropdown.options).map(o => o.value);
             const matched = dropdownOptions.find(opt =>
                 opt.toLowerCase().startsWith(firstLetter)
@@ -220,32 +222,38 @@
             Object.keys(data).sort().forEach(dropKey => {
                 data[dropKey].forEach((item, index) => {
 
-                    // ✅ WORKS FOR STRING + OBJECT DATA
-                    const text = typeof item === "string" ? item : item.text;
+                    const text = item.text;
 
                     if (text.toLowerCase().includes(input)) {
-                        const div = document.createElement("div");
-                        div.className = "card";
 
+                        const div = document.createElement("div");
+
+                        // ✅ SAME difficulty color
+                        div.className = `card ${item.difficulty}`;
+
+                        // ✅ SAME buttons as normal view
                         div.innerHTML = `
-                            <small style="color:#2563eb;font-weight:600;">${dropKey}</small>
                             <div class="card-actions">
-                                <button disabled>▲</button>
-                                <button disabled>▼</button>
-                                <button class="delete-card"
-                                    onclick="deleteCard('${dropKey}', ${index})">✖</button>
+                                        <button class="edit-btn"
+            onclick="editCard('${dropKey}',${index})">✏️</button>
+
+        <button class="delete-card"
+            onclick="deleteCard('${dropKey}', ${index})">✖</button>
                             </div>
                             <strong>${text}</strong>
                         `;
+
                         container.appendChild(div);
                     }
                 });
             });
 
             if (!container.children.length) {
-                container.innerHTML = `<p style="color:#6b7280;">No match found</p>`;
+                container.innerHTML =
+                    `<p style="color:#6b7280;">No match found</p>`;
             }
         }
+
 
 
         /* 🆕 Backward compatibility */
@@ -315,55 +323,66 @@
                 const d = document.createElement("div");
                 d.className = `card ${item.difficulty}`;
                 d.innerHTML = `
-                    <div class="card-actions">
-                        <button class="edit-btn" onclick="editCard(${i})">✏️</button>
-                        <button class="delete-card" onclick="deleteCard('${sel}',${i})">✖</button>
-                    </div>
-                    <strong>${i + 1}. ${item.text}</strong>
-                `;
+                            <div class="card-actions">
+        <button class="edit-btn" onclick="editCard('${sel}',${i})">✏️</button>
+                                        <button class="delete-card" onclick="deleteCard('${sel}',${i})">✖</button>
+                            </div>
+                            <strong>${i + 1}. ${item.text}</strong>
+                        `;
                 c.appendChild(d);
             });
         }
 
-        function editCard(i) {
-            const sel = dropdown.value;
-            const item = data[sel][i];
-            const card = document.getElementById("cardContainer").children[i];
 
-            card.innerHTML = `
-                <input id="editText" value="${item.text}">
-                <select id="editDiff">
-                    <option value="easy">Easy</option>
-                    <option value="medium">Medium</option>
-                    <option value="hard">Hard</option>
-                </select>
-                <button onclick="saveEdit(${i})">Save</button>
-                <button onclick="renderCards()">Cancel</button>
-            `;
-            editDiff.value = item.difficulty;
+        function editCard(dropKey, i) {
+            const item = data[dropKey][i];
+            if (!item) return;
+
+            const cards = document.getElementById("cardContainer").children;
+
+            for (let card of cards) {
+                if (card.querySelector("button")?.onclick?.toString()
+                    .includes(`editCard('${dropKey}',${i})`)) {
+
+                    card.innerHTML = `
+                        <input id="editText" value="${item.text}">
+                        <select id="editDiff">
+                            <option value="easy">Easy</option>
+                            <option value="medium">Medium</option>
+                            <option value="hard">Hard</option>
+                        </select>
+                        <button onclick="saveEdit('${dropKey}',${i})">Save</button>
+                        <button onclick="renderCards()">Cancel</button>
+                    `;
+                    editDiff.value = item.difficulty;
+                    break;
+                }
+            }
         }
 
-        function saveEdit(i) {
-            const sel = dropdown.value;
-            data[sel][i] = {
+
+        function saveEdit(dropKey, i) {
+            data[dropKey][i] = {
                 text: editText.value.trim(),
                 difficulty: editDiff.value
             };
             saveData();
-            renderCards();
+            autoFilter(); // stay in search mode
         }
 
         function deleteCard(k, i) {
             if (!confirm("Delete this card?")) return;
             data[k].splice(i, 1);
-            saveData(); renderCards();
+            saveData();
+            renderCards();
         }
 
         function deleteDropdown() {
             const s = dropdown.value;
             if (!s || !confirm(`Delete "${s}" and all its data?`)) return;
             delete data[s];
-            saveData(); loadDropdown(); renderCards();
+            saveData(); loadDropdown(); 
+            renderCards();
         }
 
         function filterByCategory() {
@@ -385,20 +404,38 @@
         function downloadPDF() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
+
+            const searchText = document.getElementById("cardText")
+                .value.toLowerCase().trim();
+
             let first = true;
 
             Object.keys(data).sort().forEach(k => {
-                if (!data[k].length) return;
+
+                // ✅ Filter items if search active
+                let items = data[k];
+
+                if (searchText !== "") {
+                    items = items.filter(it =>
+                        it.text.toLowerCase().includes(searchText)
+                    );
+                }
+
+                if (!items.length) return;
+
                 if (!first) doc.addPage();
                 first = false;
 
+                // 🔹 SAME LOOK AS BEFORE
                 doc.setFontSize(14);
                 doc.setTextColor(0);
                 doc.text(k, 10, 15);
+
                 let y = 25;
 
-                data[k].forEach((it, i) => {
+                items.forEach((it, i) => {
                     let col = [0, 0, 0];
+
                     if (it.difficulty === "easy") col = [22, 163, 74];
                     if (it.difficulty === "medium") col = [234, 179, 8];
                     if (it.difficulty === "hard") col = [220, 38, 38];
@@ -411,12 +448,16 @@
                     doc.line(10, y, 200, y);
                     y += 6;
 
-                    if (y > 280) { doc.addPage(); y = 20; }
+                    if (y > 280) {
+                        doc.addPage();
+                        y = 20;
+                    }
                 });
             });
 
             doc.save("Hi_Kumar_" + Date.now() + ".pdf");
         }
+
 
         loadDropdown();
         renderCards();
