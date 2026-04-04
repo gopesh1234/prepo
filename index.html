@@ -1,128 +1,121 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="utf-8" />
-    <title>Match the Columns</title>
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         body {
-    font-family: Roboto, 'Segoe UI', sans-serif;
-    margin: 0;
-    background: #f1f3f6;
-}
+            font-family: Arial;
+            margin: 0;
+            background: #f2f2f2;
+        }
 
-/* App Bar */
-h2 {
-    background: #1976d2;
-    color: white;
-    margin: 0;
-    padding: 16px;
-    font-size: 18px;
-    text-align: left;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-}
+        .header {
+            background: #1976d2;
+            color: white;
+            text-align: center;
+            padding: 12px;
+            font-weight: bold;
+        }
 
-/* Container */
-.container {
-    display: flex;
-    justify-content: space-between;
-    padding: 10px;
-    gap: 10px;
-}
+        .question-box {
+            padding: 15px;
+        }
 
-/* Columns */
-.column {
-    width: 48%;
-}
+        .question {
+            font-size: 18px;
+            margin-bottom: 15px;
+        }
 
-/* Cards (Android style) */
-.item {
-    padding: 14px;
-    margin: 10px 0;
-    background: white;
-    border-radius: 10px;
-    cursor: pointer;
-    transition: 0.2s;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-    font-size: 14px;
-}
+        .option {
+            background: white;
+            margin: 10px 0;
+            padding: 12px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            cursor: pointer;
+        }
 
-/* Press effect */
-.item:active {
-    transform: scale(0.97);
-    background: #e3f2fd;
-}
+            .option:hover {
+                background: #e3f2fd;
+            }
 
-/* Selected */
-.selected {
-    background: #1976d2 !important;
-    color: white;
-}
+        .columns {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+        }
 
-/* Canvas */
-canvas {
-    position: fixed;
-    top: 0;
-    left: 0;
-    pointer-events: none;
-}
+        .column {
+            width: 48%;
+        }
 
-/* Bottom Navigation Bar */
-.controls {
-    position: fixed;
-    bottom: 0;
-    width: 100%;
-    background: white;
-    display: flex;
-    justify-content: space-around;
-    padding: 10px 0;
-    box-shadow: 0 -2px 8px rgba(0,0,0,0.2);
-}
+        .item {
+            background: white;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            cursor: pointer;
+        }
 
-/* Buttons → Material style */
-button {
-    border: none;
-    background: none;
-    font-size: 16px;
-    color: #1976d2;
-    font-weight: 600;
-}
+        .selected {
+            background: #90caf9 !important;
+        }
 
-/* Result */
-.result {
-    padding: 10px;
-    font-weight: bold;
-    text-align: center;
-    color: #1976d2;
-}
+        .controls {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            display: flex;
+        }
 
-/* Mobile tuning */
-@@media (max-width: 768px) {
-    .item {
-        font-size: 13px;
-        padding: 12px;
-    }
-}
+        button {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            font-size: 16px;
+        }
+
+        .prev {
+            background: #bdbdbd;
+        }
+
+        .next {
+            background: #4caf50;
+            color: white;
+        }
+
+        .ok {
+            background: #1976d2;
+            color: white;
+        }
+
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+        }
     </style>
 </head>
 <body>
 
-    <h2>Match the Columns</h2>
+    <div class="header">IDIOMS/OWS/PV/PREPO</div>
     <canvas id="canvas"></canvas>
 
-    <div class="container">
-        <div class="column" id="left"></div>
-        <div class="column" id="right"></div>
+    <div class="question-box">
+        <div class="question"></div>
+        <div class="columns">
+            <div class="column" id="left"></div>
+            <div class="column" id="right"></div>
+        </div>
     </div>
 
     <div class="controls">
-        <button onclick="prevQ()">◀</button>
-        <button onclick="checkAnswer()">OK</button>
-        <button onclick="nextQ()">▶</button>
-        <button onclick="clearStorage()">Clear</button>
+        <button class="prev" onclick="prevQ()">Prev</button>
+        <button class="ok" onclick="checkAnswer()">OK</button>
+        <button class="next" onclick="nextQ()">Next</button>
     </div>
-
-    <div class="result" id="result"></div>
 
     <script>
         let questions = [
@@ -187,18 +180,12 @@ button {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
         }
-        window.onresize = resizeCanvas;
         resizeCanvas();
 
         function loadQ() {
             leftDiv.innerHTML = "";
             rightDiv.innerHTML = "";
-
-            // ✅ restore saved matches
-            matches = JSON.parse(localStorage.getItem("matches_" + current)) || {};
-
-            // ❌ clear only result
-            document.getElementById("result").innerText = "";
+            matches = {};
 
             questions[current].left.forEach((text, i) => {
                 let div = document.createElement("div");
@@ -215,24 +202,17 @@ button {
                 div.onclick = () => selectRight(i);
                 rightDiv.appendChild(div);
             });
-
-            drawLines();
         }
 
         function selectLeft(index, el) {
             selectedLeft = index;
-
-            document.querySelectorAll(".item").forEach(e => e.classList.remove("selected"));
-            el.classList.add("selected");
+            document.querySelectorAll('.item').forEach(e => e.classList.remove('selected'));
+            el.classList.add('selected');
         }
 
         function selectRight(index) {
             if (selectedLeft !== null) {
                 matches[selectedLeft] = index;
-
-                // ✅ save progress
-                localStorage.setItem("matches_" + current, JSON.stringify(matches));
-
                 selectedLeft = null;
                 drawLines();
             }
@@ -240,59 +220,33 @@ button {
 
         function drawLines() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-
             let leftItems = leftDiv.children;
             let rightItems = rightDiv.children;
 
             Object.keys(matches).forEach(l => {
                 let r = matches[l];
-
                 let lRect = leftItems[l].getBoundingClientRect();
                 let rRect = rightItems[r].getBoundingClientRect();
 
                 ctx.beginPath();
                 ctx.moveTo(lRect.right, lRect.top + lRect.height / 2);
                 ctx.lineTo(rRect.left, rRect.top + rRect.height / 2);
-                ctx.strokeStyle = "#ffeb3b";
-                ctx.lineWidth = 3;
                 ctx.stroke();
             });
         }
 
         function checkAnswer() {
-            let correct = 0;
             let ans = questions[current].answer;
-
+            let correct = 0;
             Object.keys(ans).forEach(k => {
                 if (matches[k] == ans[k]) correct++;
             });
-
-            document.getElementById("result").innerText =
-                `Correct: ${correct} / ${Object.keys(ans).length}`;
+            alert("Correct: " + correct + "/" + Object.keys(ans).length);
         }
 
-        function nextQ() {
-            if (current < questions.length - 1) {
-                current++;
-                loadQ();
-            }
-        }
+        function nextQ() { }
+        function prevQ() { }
 
-        function prevQ() {
-            if (current > 0) {
-                current--;
-                loadQ();
-            }
-        }
-
-        function clearStorage() {
-            localStorage.clear();
-            matches = {};
-            loadQ();
-            alert("Storage cleared");
-        }
-
-        // initial load
         loadQ();
     </script>
 
