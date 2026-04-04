@@ -58,10 +58,6 @@
             cursor: pointer;
         }
 
-        .selected {
-            background: #90caf9 !important;
-        }
-
         .controls {
             position: fixed;
             bottom: 0;
@@ -90,18 +86,11 @@
             color: white;
         }
 
-        canvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-            pointer-events: none;
-        }
     </style>
 </head>
 <body>
 
     <div class="header">IDIOMS/OWS/PV/PREPO</div>
-    <canvas id="canvas"></canvas>
 
     <div class="question-box">
         <div class="question"></div>
@@ -164,7 +153,8 @@
                     3: 2,
                     4: 0
                 }
-            }
+            },
+
         ];
 
         let current = 0;
@@ -173,14 +163,6 @@
 
         const leftDiv = document.getElementById("left");
         const rightDiv = document.getElementById("right");
-        const canvas = document.getElementById("canvas");
-        const ctx = canvas.getContext("2d");
-
-        function resizeCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        }
-        resizeCanvas();
 
         function loadQ() {
             leftDiv.innerHTML = "";
@@ -205,6 +187,9 @@
         }
 
         function selectLeft(index, el) {
+            // prevent selecting already matched (locked) left item
+            if (matches.hasOwnProperty(index)) return;
+
             selectedLeft = index;
             document.querySelectorAll('.item').forEach(e => e.classList.remove('selected'));
             el.classList.add('selected');
@@ -212,28 +197,41 @@
 
         function selectRight(index) {
             if (selectedLeft !== null) {
+                // prevent selecting a right item that's already used (locked)
+                if (Object.values(matches).includes(index)) return;
+
                 matches[selectedLeft] = index;
+
+                let leftItems = leftDiv.children;
+                let rightItems = rightDiv.children;
+
+                // unique color per pair
+                let color = getColor(Object.keys(matches).length);
+
+                leftItems[selectedLeft].style.background = color;
+                rightItems[index].style.background = color;
+
+                // lock visual (no further clicks effect)
+                leftItems[selectedLeft].style.pointerEvents = 'none';
+                rightItems[index].style.pointerEvents = 'none';
+
                 selectedLeft = null;
-                drawLines();
             }
         }
 
-        function drawLines() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            let leftItems = leftDiv.children;
-            let rightItems = rightDiv.children;
-
-            Object.keys(matches).forEach(l => {
-                let r = matches[l];
-                let lRect = leftItems[l].getBoundingClientRect();
-                let rRect = rightItems[r].getBoundingClientRect();
-
-                ctx.beginPath();
-                ctx.moveTo(lRect.right, lRect.top + lRect.height / 2);
-                ctx.lineTo(rRect.left, rRect.top + rRect.height / 2);
-                ctx.stroke();
-            });
+        // predefined soft colors
+        function getColor(i) {
+            const colors = [
+                "#ffccbc", // orange
+                "#c5e1a5", // green
+                "#b3e5fc", // blue
+                "#f8bbd0", // pink
+                "#d1c4e9", // purple
+                "#ffe082"  // yellow
+            ];
+            return colors[(i - 1) % colors.length];
         }
+
 
         function checkAnswer() {
             let ans = questions[current].answer;
@@ -244,8 +242,20 @@
             alert("Correct: " + correct + "/" + Object.keys(ans).length);
         }
 
-        function nextQ() { }
-        function prevQ() { }
+        function nextQ() {
+            if (current < questions.length - 1) {
+                current++;
+                loadQ();
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }
+        }
+        function prevQ() {
+            if (current > 0) {
+                current--;
+                loadQ();
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }
+        }
 
         loadQ();
     </script>
