@@ -1,68 +1,106 @@
+@{
+    Layout = null;
+}
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8" />
     <title>Match the Columns</title>
+
     <style>
         body {
-            font-family: Arial;
-            background: #f5f7fa;
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            margin: 0;
+            color: #333;
             text-align: center;
+        }
+
+        h2 {
+            color: white;
+            margin-top: 15px;
         }
 
         .container {
             display: flex;
-            justify-content: center;
-            margin-top: 40px;
+            justify-content: space-around;
+            padding: 10px;
+            gap: 10px;
         }
 
         .column {
-            width: 200px;
-            margin: 0 40px;
+            width: 45%;
         }
 
         .item {
-            padding: 10px;
-            margin: 10px;
+            padding: 14px;
+            margin: 10px 0;
             background: white;
-            border-radius: 8px;
+            border-radius: 12px;
             cursor: pointer;
-            transition: 0.3s;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            transition: all 0.25s ease;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            font-size: 14px;
         }
 
-            .item:hover {
-                background: #e3f2fd;
-            }
+        .item:hover {
+            transform: scale(1.03);
+            background: #e3f2fd;
+        }
 
         .selected {
-            background: #90caf9 !important;
+            background: #4caf50 !important;
+            color: white;
         }
 
         canvas {
-            position: absolute;
+            position: fixed;
             top: 0;
             left: 0;
             pointer-events: none;
         }
 
         .controls {
-            margin-top: 20px;
+            position: sticky;
+            bottom: 0;
+            background: white;
+            padding: 10px;
+            box-shadow: 0 -3px 10px rgba(0,0,0,0.2);
         }
 
         button {
-            padding: 10px 20px;
+            padding: 12px;
             margin: 5px;
             border: none;
-            border-radius: 6px;
+            border-radius: 8px;
             cursor: pointer;
             background: #1976d2;
             color: white;
+            font-size: 14px;
+            width: 22%;
         }
 
         .result {
-            margin-top: 20px;
+            margin: 10px;
             font-weight: bold;
+            color: white;
+        }
+
+        @@media (max-width: 768px) {
+            .column {
+                width: 48%;
+            }
+
+            button {
+                width: 23%;
+                font-size: 12px;
+                padding: 10px;
+            }
+
+            .item {
+                font-size: 13px;
+                padding: 12px;
+            }
         }
     </style>
 </head>
@@ -77,10 +115,10 @@
     </div>
 
     <div class="controls">
-        <button onclick="prevQ()">◀ Back</button>
+        <button onclick="prevQ()">◀</button>
         <button onclick="checkAnswer()">OK</button>
-        <button onclick="nextQ()">Next ▶</button>
-        <button onclick="clearStorage()">Clear Storage</button>
+        <button onclick="nextQ()">▶</button>
+        <button onclick="clearStorage()">Clear</button>
     </div>
 
     <div class="result" id="result"></div>
@@ -132,7 +170,7 @@
                     3: 2,
                     4: 0
                 }
-            },
+            }
         ];
 
         let current = 0;
@@ -154,7 +192,12 @@
         function loadQ() {
             leftDiv.innerHTML = "";
             rightDiv.innerHTML = "";
+
+            // ✅ restore saved matches
             matches = JSON.parse(localStorage.getItem("matches_" + current)) || {};
+
+            // ❌ clear only result
+            document.getElementById("result").innerText = "";
 
             questions[current].left.forEach((text, i) => {
                 let div = document.createElement("div");
@@ -177,7 +220,7 @@
 
         function selectLeft(index, el) {
             selectedLeft = index;
-            document.querySelectorAll(".left .item");
+
             document.querySelectorAll(".item").forEach(e => e.classList.remove("selected"));
             el.classList.add("selected");
         }
@@ -185,7 +228,10 @@
         function selectRight(index) {
             if (selectedLeft !== null) {
                 matches[selectedLeft] = index;
+
+                // ✅ save progress
                 localStorage.setItem("matches_" + current, JSON.stringify(matches));
+
                 selectedLeft = null;
                 drawLines();
             }
@@ -193,6 +239,7 @@
 
         function drawLines() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+
             let leftItems = leftDiv.children;
             let rightItems = rightDiv.children;
 
@@ -205,8 +252,8 @@
                 ctx.beginPath();
                 ctx.moveTo(lRect.right, lRect.top + lRect.height / 2);
                 ctx.lineTo(rRect.left, rRect.top + rRect.height / 2);
-                ctx.strokeStyle = "#1976d2";
-                ctx.lineWidth = 2;
+                ctx.strokeStyle = "#ffeb3b";
+                ctx.lineWidth = 3;
                 ctx.stroke();
             });
         }
@@ -214,6 +261,7 @@
         function checkAnswer() {
             let correct = 0;
             let ans = questions[current].answer;
+
             Object.keys(ans).forEach(k => {
                 if (matches[k] == ans[k]) correct++;
             });
@@ -238,9 +286,12 @@
 
         function clearStorage() {
             localStorage.clear();
+            matches = {};
+            loadQ();
             alert("Storage cleared");
         }
 
+        // initial load
         loadQ();
     </script>
 
