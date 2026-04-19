@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IDIOMS/OWS/PV/PREPO</title>
+    <title>IDIOMS__OWS</title>
     <style>
         body {
             font-family: Arial;
@@ -102,18 +102,14 @@
     </style>
 </head>
 <body>
-    <div class='header'>IDIOMS___OWS<sup>   Gopesh</sup><span id='pageCount' style='float:right;font-size:14px;margin-right:10px'></span></div>
+    <div class='header'>IDIOMS___OWS<span id='pageCount' style='float:right;font-size:14px;margin-right:10px'></span></div>
     <div class='topbar'>
-        <select id='difficulty' onchange='saveDifficulty()'>
-            <option value='easy'>Easy</option>
-            <option value='hard'>Hard</option>
-        </select>
+        <select id='difficulty' onchange='saveDifficulty()'><option value='hard'>Hard</option></select>
         <select id='filter' onchange='applyFilter()'>
             <option value='all'>All Pages</option>
-            <option value='easy'>Only Easy</option>
-            <option value='hard'>Only Hard</option>
+            <option value='hard'>Hard</option>
         </select>
-        <button class='smallbtn' onclick='showAnswers()'>💡 Answer</button>
+        <button class='smallbtn' onclick='showAnswers()'>💡 Answer</button><button class='smallbtn' onclick='clearStorage()'>🗑 Clear</button>
     </div>
     <div class='answerBox' id='answerBox'></div>
     <div class='question-box'>
@@ -1074,25 +1070,25 @@
             },
             {
                 left: [
-                    "Applicant",
-                    "Appraisal",
-                    "Arena",
-                    "Arbitrator",
-                    "Appertain"
+                    "Armistice",
+                    "Ascribe",
+                    "Askance",
+                    "Avalanche",
+                    "Bale"
                 ],
                 right: [
-                    "A person appointed to settle a dispute between two parties",
-                    "One who formally requests something, especially for a job",
-                    "To belong to; be related to",
-                    "Estimation of a thing's worth",
-                    "A place where sports, fights, or public events are held"
+                    "A large mass of snow / ice / rocks that suddenly slides down a mountain",
+                    "A large bundle of goods",
+                    "A formal agreement between belligerents to momentarily stop active hostilities",
+                    "With a look of suspicion",
+                    "To attribute; credit to a cause / person"
                 ],
                 answer: {
-                    0: 1,
-                    1: 3,
-                    2: 4,
+                    0: 2,
+                    1: 4,
+                    2: 3,
                     3: 0,
-                    4: 2
+                    4: 1
                 }
             },
             {
@@ -1120,25 +1116,25 @@
             },
             {
                 left: [
-                    "Anticipate",
-                    "Antonym",
-                    "Apartment",
-                    "Apartheid",
-                    "Apologize"
+                    "Applicant",
+                    "Appraisal",
+                    "Arena",
+                    "Arbitrator",
+                    "Appertain"
                 ],
                 right: [
-                    "To express regret for something that one has done wrong",
-                    "A word with opposite meaning",
-                    "A set of rooms forming one residence in a building",
-                    "A system of racial segregation / discrimination",
-                    "Expect or predict in advance"
+                    "A person appointed to settle a dispute between two parties",
+                    "One who formally requests something, especially for a job",
+                    "To belong to; be related to",
+                    "Estimation of a thing's worth",
+                    "A place where sports, fights, or public events are held"
                 ],
                 answer: {
-                    0: 4,
-                    1: 1,
-                    2: 2,
-                    3: 3,
-                    4: 0
+                    0: 1,
+                    1: 3,
+                    2: 4,
+                    3: 0,
+                    4: 2
                 }
             },
             {
@@ -1166,42 +1162,43 @@
             },
             {
                 left: [
-                    "Armistice",
-                    "Ascribe",
-                    "Askance",
-                    "Avalanche",
-                    "Bale"
+                    "Anticipate",
+                    "Antonym",
+                    "Apartment",
+                    "Apartheid",
+                    "Apologize"
                 ],
                 right: [
-                    "A large mass of snow / ice / rocks that suddenly slides down a mountain",
-                    "A large bundle of goods",
-                    "A formal agreement between belligerents to momentarily stop active hostilities",
-                    "With a look of suspicion",
-                    "To attribute; credit to a cause / person"
+                    "A word with opposite meaning",
+                    "A system of racial segregation / discrimination",
+                    "To express regret for something that one has done wrong",
+                    "Expect or predict in advance",
+                    "A set of rooms forming one residence in a building"
                 ],
                 answer: {
-                    0: 2,
-                    1: 4,
-                    2: 3,
-                    3: 0,
-                    4: 1
+                    0: 3,
+                    1: 0,
+                    2: 4,
+                    3: 1,
+                    4: 2
                 }
             },
 
-        ]; 
+        ];
         let current = 0, selectedLeft = null, matches = {}, filtered = questions.map((_, i) => i);
-        let pageStatus = JSON.parse(localStorage.getItem('pageStatus') || '{}');
+        let rowStatus = JSON.parse(localStorage.getItem('rowStatus') || '{}');
         const leftDiv = document.getElementById('left'), rightDiv = document.getElementById('right');
-        function loadQ() { document.getElementById('pageCount').innerText = (current + 1) + '/' + filtered.length; let real = filtered[current]; if (real == null) return; leftDiv.innerHTML = ''; rightDiv.innerHTML = ''; matches = {}; document.getElementById('answerBox').innerHTML = ''; document.getElementById('difficulty').value = pageStatus[real] || 'easy'; questions[real].left.forEach((t, i) => { let d = document.createElement('div'); d.className = 'item'; d.innerText = t; d.onclick = () => selectLeft(i, d); leftDiv.appendChild(d) }); questions[real].right.forEach((t, i) => { let d = document.createElement('div'); d.className = 'item'; d.innerText = t; d.onclick = () => selectRight(i); rightDiv.appendChild(d) }); }
-        function selectLeft(i, el) { if (matches.hasOwnProperty(i)) return; selectedLeft = i; document.querySelectorAll('.item').forEach(e => e.classList.remove('selected')); el.classList.add('selected'); }
+        function loadQ() { document.getElementById('pageCount').innerText = (current + 1) + '/' + filtered.length; let ref = filtered[current]; if (ref == null) return; let rowOnly = false; let real = ref; if (String(ref).includes('_')) { let parts = String(ref).split('_'); real = parseInt(parts[0]); selectedLeft = parseInt(parts[1]); rowOnly = true; } leftDiv.innerHTML = ''; rightDiv.innerHTML = ''; matches = {}; document.getElementById('answerBox').innerHTML = ''; document.getElementById('difficulty').value = ''; questions[real].left.forEach((t, i) => { if (rowOnly && i !== selectedLeft) return; let d = document.createElement('div'); d.className = 'item'; d.innerText = t; let st = rowStatus[real + '_' + i]; if (st) d.style.border = '2px solid ' + (st === 'hard' ? '#e53935' : '#43a047'); d.onclick = () => selectLeft(i, d); leftDiv.appendChild(d) }); questions[real].right.forEach((t, i) => { if (rowOnly) { let ans = questions[real].answer[selectedLeft]; if (i !== ans) return; } let d = document.createElement('div'); d.className = 'item'; d.innerText = t; d.onclick = () => selectRight(i); rightDiv.appendChild(d) }); }
+        function selectLeft(i, el) { if (matches.hasOwnProperty(i)) return; selectedLeft = i; document.querySelectorAll('.item').forEach(e => e.classList.remove('selected')); el.classList.add('selected'); let real = filtered[current]; document.getElementById('difficulty').value = rowStatus[real + '_' + i] || ''; }
         function selectRight(i) { if (selectedLeft !== null) { if (Object.values(matches).includes(i)) return; matches[selectedLeft] = i; let c = getColor(Object.keys(matches).length); leftDiv.children[selectedLeft].style.background = c; rightDiv.children[i].style.background = c; leftDiv.children[selectedLeft].style.pointerEvents = 'none'; rightDiv.children[i].style.pointerEvents = 'none'; selectedLeft = null; } }
         function getColor(i) { const colors = ['#ffccbc', '#c5e1a5', '#b3e5fc', '#f8bbd0', '#d1c4e9']; return colors[(i - 1) % colors.length] }
         function checkAnswer() { let ans = questions[filtered[current]].answer, correct = 0; Object.keys(ans).forEach(k => { if (matches[k] == ans[k]) correct++ }); alert('Correct: ' + correct + '/' + Object.keys(ans).length) }
         function showAnswers() { let q = questions[filtered[current]], txt = ''; Object.keys(q.answer).forEach(k => { txt += (parseInt(k) + 1) + '. ' + q.left[k] + ' ➜ ' + q.right[q.answer[k]] + '<br>' }); document.getElementById('answerBox').innerHTML = txt; }
-        function saveDifficulty() { pageStatus[filtered[current]] = document.getElementById('difficulty').value; localStorage.setItem('pageStatus', JSON.stringify(pageStatus)); }
-        function applyFilter() { let f = document.getElementById('filter').value; filtered = []; for (let i = 0; i < questions.length; i++) { let s = pageStatus[i] || 'easy'; if (f === 'all' || f === s) filtered.push(i); } current = 0; if (filtered.length === 0) { leftDiv.innerHTML = ''; rightDiv.innerHTML = ''; document.getElementById('answerBox').innerHTML = 'No pages found'; return; } loadQ(); }
+        function saveDifficulty() { if (selectedLeft === null) return; let real = filtered[current]; let val = document.getElementById('difficulty').value; let key = real + '_' + selectedLeft; rowStatus[key] = val; localStorage.setItem('rowStatus', JSON.stringify(rowStatus)); let row = leftDiv.children[selectedLeft]; if (row) { row.style.border = '2px solid ' + (val === 'hard' ? '#e53935' : '#43a047'); } }
+        function applyFilter() { let f = document.getElementById('filter').value; filtered = []; for (let i = 0; i < questions.length; i++) { if (f === 'all') { filtered.push(i); continue; } for (let r = 0; r < questions[i].left.length; r++) { let s = rowStatus[i + '_' + r] || ''; if (s == f) filtered.push(i + '_' + r); } } current = 0; if (filtered.length === 0) { leftDiv.innerHTML = ''; rightDiv.innerHTML = ''; document.getElementById('answerBox').innerHTML = 'No rows found'; document.getElementById('pageCount').innerText = '0/0'; return; } loadQ(); }
         function nextQ() { if (current < filtered.length - 1) { current++; loadQ(); } }
         function prevQ() { if (current > 0) { current--; loadQ(); } }
+        function clearStorage() { localStorage.clear(); rowStatus = {}; filtered = questions.map((_, i) => i); current = 0; document.getElementById('filter').value = 'all'; loadQ(); }
         loadQ();
     </script>
 </body>
