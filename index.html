@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IDIOMS__OWS</title>
+    <title>IDIOMS/OWS/PV/PREPO</title>
     <style>
         body {
             font-family: Arial;
@@ -102,7 +102,7 @@
     </style>
 </head>
 <body>
-    <div class='header'>IDIOMS__OWS<span id='pageCount' style='float:right;font-size:14px;margin-right:10px'></span></div>
+    <div class='header'>IDIOMS/OWS/PV/PREPO <span id='pageCount' style='float:right;font-size:14px;margin-right:10px'></span></div>
     <div class='topbar'>
         <select id='difficulty' onchange='saveDifficulty()'><option value='hard'>Hard</option></select>
         <select id='filter' onchange='applyFilter()'>
@@ -1188,7 +1188,111 @@
         let current = 0, selectedLeft = null, matches = {}, filtered = questions.map((_, i) => i);
         let rowStatus = JSON.parse(localStorage.getItem('rowStatus') || '{}');
         const leftDiv = document.getElementById('left'), rightDiv = document.getElementById('right');
-        function loadQ() { document.getElementById('pageCount').innerText = (current + 1) + '/' + filtered.length; let ref = filtered[current]; if (ref == null) return; if (ref === 'hard_all') { leftDiv.innerHTML = ''; rightDiv.innerHTML = ''; matches = {}; document.getElementById('answerBox').innerHTML = ''; let count = 0; for (let p = 0; p < questions.length; p++) { for (let r = 0; r < questions[p].left.length; r++) { if (rowStatus[p + '_' + r] === 'hard') { count++; let wrap = document.createElement('div'); wrap.style.display = 'grid'; wrap.style.gridTemplateColumns = '1fr 1fr'; wrap.style.gap = '12px'; wrap.style.margin = '12px 0'; wrap.style.padding = '14px'; wrap.style.background = '#fff'; wrap.style.borderRadius = '12px'; wrap.style.boxShadow = '0 3px 8px rgba(0,0,0,.12)'; wrap.style.border = '1px solid #e0e0e0'; leftDiv.appendChild(wrap); let l = document.createElement('div'); l.style.padding = '10px'; l.style.background = '#f8f9fa'; l.style.borderRadius = '8px'; l.style.fontWeight = '600'; l.className = 'item'; l.innerText = questions[p].left[r]; l.style.borderBottom = '2px dotted #999'; l.style.marginBottom = '0'; wrap.appendChild(l); let rr = document.createElement('div'); rr.style.padding = '10px'; rr.style.background = '#eef7ff'; rr.style.borderRadius = '8px'; rr.className = 'item'; rr.innerText = questions[p].right[questions[p].answer[r]]; rr.style.borderBottom = '2px dotted #999'; rr.style.marginBottom = '0'; wrap.appendChild(rr); } } } document.getElementById('pageCount').innerText = '1/1'; if (count === 0) document.getElementById('answerBox').innerHTML = 'No hard rows found'; return; } let rowOnly = false; let real = ref; if (String(ref).includes('_')) { let parts = String(ref).split('_'); real = parseInt(parts[0]); selectedLeft = parseInt(parts[1]); rowOnly = true; } leftDiv.innerHTML = ''; rightDiv.innerHTML = ''; matches = {}; document.getElementById('answerBox').innerHTML = ''; document.getElementById('difficulty').value = ''; questions[real].left.forEach((t, i) => { if (rowOnly && i !== selectedLeft) return; let d = document.createElement('div'); d.className = 'item'; d.innerText = t; let st = rowStatus[real + '_' + i]; if (st) d.style.border = '2px solid ' + (st === 'hard' ? '#e53935' : '#43a047'); d.onclick = () => selectLeft(i, d); leftDiv.appendChild(d) }); questions[real].right.forEach((t, i) => { if (rowOnly) { let ans = questions[real].answer[selectedLeft]; if (i !== ans) return; } let d = document.createElement('div'); d.className = 'item'; d.innerText = t; d.onclick = () => selectRight(i); rightDiv.appendChild(d) }); }
+        function loadQ() {
+            document.getElementById('pageCount').innerText =
+                (current + 1) + '/' + filtered.length;
+
+            let ref = filtered[current];
+            if (ref == null) return;
+
+            leftDiv.innerHTML = '';
+            rightDiv.innerHTML = '';
+            matches = {};
+            document.getElementById('answerBox').innerHTML = '';
+
+            // HARD SECTION
+            if (ref === 'hard_all') {
+                leftDiv.style.width = '100%';
+                rightDiv.style.display = 'none';
+
+                // control page scroll
+                document.body.style.paddingBottom = '0px';
+                document.body.style.overflowX = 'hidden';
+
+                let count = 0;
+
+                for (let p = 0; p < questions.length; p++) {
+                    for (let r = 0; r < questions[p].left.length; r++) {
+                        if (rowStatus[p + '_' + r] === 'hard') {
+                            count++;
+
+                            let box = document.createElement('div');
+                            box.className = 'item';
+                            box.style.width = '100%';
+                            box.style.margin = '10px 0';
+                            box.style.lineHeight = '1.5';
+                            box.style.boxSizing = 'border-box';
+                            box.style.wordBreak = 'break-word';
+
+                            box.innerHTML =
+                                "<b>" + questions[p].left[r] + ":</b> " +
+                                questions[p].right[questions[p].answer[r]];
+
+                            leftDiv.appendChild(box);
+                        }
+                    }
+                }
+
+                document.getElementById('pageCount').innerText = '1/1';
+
+                if (count === 0) {
+                    document.getElementById('answerBox').innerHTML = 'No hard rows found';
+                }
+
+                return;
+            }
+
+            // NORMAL SECTION
+            document.body.style.paddingBottom = '70px';
+            document.body.style.overflowX = 'hidden';
+
+            leftDiv.style.width = '48%';
+            rightDiv.style.width = '48%';
+            rightDiv.style.display = 'block';
+
+            let rowOnly = false;
+            let real = ref;
+
+            if (String(ref).includes('_')) {
+                let parts = String(ref).split('_');
+                real = parseInt(parts[0]);
+                selectedLeft = parseInt(parts[1]);
+                rowOnly = true;
+            }
+
+            document.getElementById('difficulty').value = '';
+
+            questions[real].left.forEach((t, i) => {
+                if (rowOnly && i !== selectedLeft) return;
+
+                let d = document.createElement('div');
+                d.className = 'item';
+                d.innerText = t;
+
+                let st = rowStatus[real + '_' + i];
+                if (st) {
+                    d.style.border =
+                        '2px solid ' + (st === 'hard' ? '#e53935' : '#43a047');
+                }
+
+                d.onclick = () => selectLeft(i, d);
+                leftDiv.appendChild(d);
+            });
+
+            questions[real].right.forEach((t, i) => {
+                if (rowOnly) {
+                    let ans = questions[real].answer[selectedLeft];
+                    if (i !== ans) return;
+                }
+
+                let d = document.createElement('div');
+                d.className = 'item';
+                d.innerText = t;
+                d.onclick = () => selectRight(i);
+
+                rightDiv.appendChild(d);
+            });
+        }
         function selectLeft(i, el) { if (matches.hasOwnProperty(i)) return; selectedLeft = i; document.querySelectorAll('.item').forEach(e => e.classList.remove('selected')); el.classList.add('selected'); let real = filtered[current]; document.getElementById('difficulty').value = rowStatus[real + '_' + i] || ''; }
         function selectRight(i) { if (selectedLeft !== null) { if (Object.values(matches).includes(i)) return; matches[selectedLeft] = i; let c = getColor(Object.keys(matches).length); leftDiv.children[selectedLeft].style.background = c; rightDiv.children[i].style.background = c; leftDiv.children[selectedLeft].style.pointerEvents = 'none'; rightDiv.children[i].style.pointerEvents = 'none'; selectedLeft = null; } }
         function getColor(i) { const colors = ['#ffccbc', '#c5e1a5', '#b3e5fc', '#f8bbd0', '#d1c4e9']; return colors[(i - 1) % colors.length] }
