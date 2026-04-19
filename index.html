@@ -102,7 +102,7 @@
     </style>
 </head>
 <body>
-    <div class='header'>IDIOMS/OWS/PV/PREPO</div>
+    <div class='header'>IDIOMS___OWS<span id='pageCount' style='float:right;font-size:14px;margin-right:10px'></span></div>
     <div class='topbar'>
         <select id='difficulty' onchange='saveDifficulty()'>
             <option value='easy'>Easy</option>
@@ -958,11 +958,11 @@
                 }
             },
 
-        ];
+        ]; 
         let current = 0, selectedLeft = null, matches = {}, filtered = questions.map((_, i) => i);
         let pageStatus = JSON.parse(localStorage.getItem('pageStatus') || '{}');
         const leftDiv = document.getElementById('left'), rightDiv = document.getElementById('right');
-        function loadQ() { let real = filtered[current]; if (real == null) return; leftDiv.innerHTML = ''; rightDiv.innerHTML = ''; matches = {}; document.getElementById('answerBox').innerHTML = ''; document.getElementById('difficulty').value = pageStatus[real] || 'easy'; questions[real].left.forEach((t, i) => { let d = document.createElement('div'); d.className = 'item'; d.innerText = t; d.onclick = () => selectLeft(i, d); leftDiv.appendChild(d) }); questions[real].right.forEach((t, i) => { let d = document.createElement('div'); d.className = 'item'; d.innerText = t; d.onclick = () => selectRight(i); rightDiv.appendChild(d) }); }
+        function loadQ() { document.getElementById('pageCount').innerText = (current + 1) + '/' + filtered.length; let real = filtered[current]; if (real == null) return; leftDiv.innerHTML = ''; rightDiv.innerHTML = ''; matches = {}; document.getElementById('answerBox').innerHTML = ''; document.getElementById('difficulty').value = pageStatus[real] || 'easy'; questions[real].left.forEach((t, i) => { let d = document.createElement('div'); d.className = 'item'; d.innerText = t; d.onclick = () => selectLeft(i, d); leftDiv.appendChild(d) }); questions[real].right.forEach((t, i) => { let d = document.createElement('div'); d.className = 'item'; d.innerText = t; d.onclick = () => selectRight(i); rightDiv.appendChild(d) }); }
         function selectLeft(i, el) { if (matches.hasOwnProperty(i)) return; selectedLeft = i; document.querySelectorAll('.item').forEach(e => e.classList.remove('selected')); el.classList.add('selected'); }
         function selectRight(i) { if (selectedLeft !== null) { if (Object.values(matches).includes(i)) return; matches[selectedLeft] = i; let c = getColor(Object.keys(matches).length); leftDiv.children[selectedLeft].style.background = c; rightDiv.children[i].style.background = c; leftDiv.children[selectedLeft].style.pointerEvents = 'none'; rightDiv.children[i].style.pointerEvents = 'none'; selectedLeft = null; } }
         function getColor(i) { const colors = ['#ffccbc', '#c5e1a5', '#b3e5fc', '#f8bbd0', '#d1c4e9']; return colors[(i - 1) % colors.length] }
