@@ -390,7 +390,7 @@
                     "Words that begin with the same letter, syllable or sound",
                     "Soil deposited by flowing water",
                     "The school, college or university that somebody has graduated from",
-                    "The medieval forerunner of chemistry",
+                    "The medieval forerunner of chemistry (The art of turning ordinary things into Gold)",
                     "A state of emotional or intellectual separation"
                 ],
                 answer: {
@@ -1070,25 +1070,25 @@
             },
             {
                 left: [
-                    "Armistice",
-                    "Ascribe",
-                    "Askance",
-                    "Avalanche",
-                    "Bale"
+                    "Anticipate",
+                    "Antonym",
+                    "Apartment",
+                    "Apartheid",
+                    "Apologize"
                 ],
                 right: [
-                    "A large mass of snow / ice / rocks that suddenly slides down a mountain",
-                    "A large bundle of goods",
-                    "A formal agreement between belligerents to momentarily stop active hostilities",
-                    "With a look of suspicion",
-                    "To attribute; credit to a cause / person"
+                    "A word with opposite meaning",
+                    "A system of racial segregation / discrimination",
+                    "To express regret for something that one has done wrong",
+                    "Expect or predict in advance",
+                    "A set of rooms forming one residence in a building"
                 ],
                 answer: {
-                    0: 2,
-                    1: 4,
-                    2: 3,
-                    3: 0,
-                    4: 1
+                    0: 3,
+                    1: 0,
+                    2: 4,
+                    3: 1,
+                    4: 2
                 }
             },
             {
@@ -1162,25 +1162,25 @@
             },
             {
                 left: [
-                    "Anticipate",
-                    "Antonym",
-                    "Apartment",
-                    "Apartheid",
-                    "Apologize"
+                    "Armistice",
+                    "Ascribe",
+                    "Askance",
+                    "Avalanche",
+                    "Bale"
                 ],
                 right: [
-                    "A word with opposite meaning",
-                    "A system of racial segregation / discrimination",
-                    "To express regret for something that one has done wrong",
-                    "Expect or predict in advance",
-                    "A set of rooms forming one residence in a building"
+                    "A large mass of snow / ice / rocks that suddenly slides down a mountain",
+                    "A large bundle of goods",
+                    "A formal agreement between belligerents to momentarily stop active hostilities",
+                    "With a look of suspicion",
+                    "To attribute; credit to a cause / person"
                 ],
                 answer: {
-                    0: 3,
-                    1: 0,
-                    2: 4,
-                    3: 1,
-                    4: 2
+                    0: 2,
+                    1: 4,
+                    2: 3,
+                    3: 0,
+                    4: 1
                 }
             },
 
@@ -1198,7 +1198,7 @@
         function applyFilter() { let f = document.getElementById('filter').value; filtered = []; for (let i = 0; i < questions.length; i++) { if (f === 'all') { filtered.push(i); continue; } for (let r = 0; r < questions[i].left.length; r++) { let s = rowStatus[i + '_' + r] || ''; if (s == f) filtered.push(i + '_' + r); } } current = 0; if (filtered.length === 0) { leftDiv.innerHTML = ''; rightDiv.innerHTML = ''; document.getElementById('answerBox').innerHTML = 'No rows found'; document.getElementById('pageCount').innerText = '0/0'; return; } loadQ(); }
         function nextQ() { if (current < filtered.length - 1) { current++; loadQ(); } }
         function prevQ() { if (current > 0) { current--; loadQ(); } }
-        function clearStorage() { localStorage.clear(); rowStatus = {}; filtered = questions.map((_, i) => i); current = 0; document.getElementById('filter').value = 'all'; loadQ(); }
+        function clearStorage() { if (confirm('Clear all saved data?')) { localStorage.clear(); rowStatus = {}; filtered = questions.map((_, i) => i); current = 0; document.getElementById('filter').value = 'all'; loadQ(); } }
         loadQ();
     </script>
 </body>
