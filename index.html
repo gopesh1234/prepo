@@ -1,111 +1,132 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IDIOMS/OWS/PV/PREPO</title>
     <style>
         body {
             font-family: Arial;
             margin: 0;
             background: #f2f2f2;
+            padding-bottom: 70px
         }
 
         .header {
             background: #1976d2;
-            color: white;
+            color: #fff;
             text-align: center;
             padding: 12px;
             font-weight: bold;
+            position: sticky;
+            top: 0
+        }
+
+        .topbar {
+            display: flex;
+            gap: 8px;
+            padding: 10px;
+            background: #fff;
+            position: sticky;
+            top: 44px;
+            z-index: 2
+        }
+
+        select, .smallbtn {
+            padding: 8px;
+            border: none;
+            border-radius: 8px;
+            background: #e3f2fd
         }
 
         .question-box {
-            padding: 15px;
+            padding: 15px
         }
-
-        .question {
-            font-size: 18px;
-            margin-bottom: 15px;
-        }
-
-        .option {
-            background: white;
-            margin: 10px 0;
-            padding: 12px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-            cursor: pointer;
-        }
-
-            .option:hover {
-                background: #e3f2fd;
-            }
 
         .columns {
             display: flex;
             justify-content: space-between;
-            gap: 10px;
+            gap: 10px
         }
 
         .column {
-            width: 48%;
+            width: 48%
         }
 
         .item {
-            background: white;
+            background: #fff;
             padding: 10px;
             margin: 10px 0;
             border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,.2);
+            cursor: pointer
         }
+
+            .item.selected {
+                outline: 2px solid #1976d2
+            }
 
         .controls {
             position: fixed;
             bottom: 0;
             width: 100%;
-            display: flex;
+            display: flex
         }
 
-        button {
-            flex: 1;
-            padding: 15px;
-            border: none;
-            font-size: 16px;
-        }
+            .controls button {
+                flex: 1;
+                padding: 15px;
+                border: none;
+                font-size: 16px
+            }
 
         .prev {
-            background: #bdbdbd;
-        }
-
-        .next {
-            background: #4caf50;
-            color: white;
+            background: #bdbdbd
         }
 
         .ok {
             background: #1976d2;
-            color: white;
+            color: #fff
         }
 
+        .next {
+            background: #4caf50;
+            color: #fff
+        }
+
+        .answerBox {
+            padding: 10px 15px;
+            color: #333;
+            font-size: 14px
+        }
     </style>
 </head>
 <body>
-
-    <div class="header">IDIOMS/OWS/PV/PREPO</div>
-
-    <div class="question-box">
-        <div class="question"></div>
-        <div class="columns">
-            <div class="column" id="left"></div>
-            <div class="column" id="right"></div>
+    <div class='header'>IDIOMS/OWS/PV/PREPO</div>
+    <div class='topbar'>
+        <select id='difficulty' onchange='saveDifficulty()'>
+            <option value='easy'>Easy</option>
+            <option value='hard'>Hard</option>
+        </select>
+        <select id='filter' onchange='applyFilter()'>
+            <option value='all'>All Pages</option>
+            <option value='easy'>Only Easy</option>
+            <option value='hard'>Only Hard</option>
+        </select>
+        <button class='smallbtn' onclick='showAnswers()'>💡 Answer</button>
+    </div>
+    <div class='answerBox' id='answerBox'></div>
+    <div class='question-box'>
+        <div class='columns'>
+            <div class='column' id='left'></div>
+            <div class='column' id='right'></div>
         </div>
     </div>
-
-    <div class="controls">
-        <button class="prev" onclick="prevQ()">Prev</button>
-        <button class="ok" onclick="checkAnswer()">OK</button>
-        <button class="next" onclick="nextQ()">Next</button>
+    <div class='controls'>
+        <button class='prev' onclick='prevQ()'>Prev</button>
+        <button class='ok' onclick='checkAnswer()'>OK</button>
+        <button class='next' onclick='nextQ()'>Next</button>
     </div>
-
     <script>
         let questions = [
             {
@@ -800,109 +821,20 @@
             },
 
         ];
-
-        let current = 0;
-        let selectedLeft = null;
-        let matches = {};
-
-        const leftDiv = document.getElementById("left");
-        const rightDiv = document.getElementById("right");
-
-        function loadQ() {
-            leftDiv.innerHTML = "";
-            rightDiv.innerHTML = "";
-            matches = {};
-
-            questions[current].left.forEach((text, i) => {
-                let div = document.createElement("div");
-                div.className = "item";
-                div.innerText = text;
-                div.onclick = () => selectLeft(i, div);
-                leftDiv.appendChild(div);
-            });
-
-            questions[current].right.forEach((text, i) => {
-                let div = document.createElement("div");
-                div.className = "item";
-                div.innerText = text;
-                div.onclick = () => selectRight(i);
-                rightDiv.appendChild(div);
-            });
-        }
-
-        function selectLeft(index, el) {
-            // prevent selecting already matched (locked) left item
-            if (matches.hasOwnProperty(index)) return;
-
-            selectedLeft = index;
-            document.querySelectorAll('.item').forEach(e => e.classList.remove('selected'));
-            el.classList.add('selected');
-        }
-
-        function selectRight(index) {
-            if (selectedLeft !== null) {
-                // prevent selecting a right item that's already used (locked)
-                if (Object.values(matches).includes(index)) return;
-
-                matches[selectedLeft] = index;
-
-                let leftItems = leftDiv.children;
-                let rightItems = rightDiv.children;
-
-                // unique color per pair
-                let color = getColor(Object.keys(matches).length);
-
-                leftItems[selectedLeft].style.background = color;
-                rightItems[index].style.background = color;
-
-                // lock visual (no further clicks effect)
-                leftItems[selectedLeft].style.pointerEvents = 'none';
-                rightItems[index].style.pointerEvents = 'none';
-
-                selectedLeft = null;
-            }
-        }
-
-        // predefined soft colors
-        function getColor(i) {
-            const colors = [
-                "#ffccbc", // orange
-                "#c5e1a5", // green
-                "#b3e5fc", // blue
-                "#f8bbd0", // pink
-                "#d1c4e9", // purple
-                "#ffe082"  // yellow
-            ];
-            return colors[(i - 1) % colors.length];
-        }
-
-
-        function checkAnswer() {
-            let ans = questions[current].answer;
-            let correct = 0;
-            Object.keys(ans).forEach(k => {
-                if (matches[k] == ans[k]) correct++;
-            });
-            alert("Correct: " + correct + "/" + Object.keys(ans).length);
-        }
-
-        function nextQ() {
-            if (current < questions.length - 1) {
-                current++;
-                loadQ();
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-            }
-        }
-        function prevQ() {
-            if (current > 0) {
-                current--;
-                loadQ();
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-            }
-        }
-
+        let current = 0, selectedLeft = null, matches = {}, filtered = questions.map((_, i) => i);
+        let pageStatus = JSON.parse(localStorage.getItem('pageStatus') || '{}');
+        const leftDiv = document.getElementById('left'), rightDiv = document.getElementById('right');
+        function loadQ() { let real = filtered[current]; if (real == null) return; leftDiv.innerHTML = ''; rightDiv.innerHTML = ''; matches = {}; document.getElementById('answerBox').innerHTML = ''; document.getElementById('difficulty').value = pageStatus[real] || 'easy'; questions[real].left.forEach((t, i) => { let d = document.createElement('div'); d.className = 'item'; d.innerText = t; d.onclick = () => selectLeft(i, d); leftDiv.appendChild(d) }); questions[real].right.forEach((t, i) => { let d = document.createElement('div'); d.className = 'item'; d.innerText = t; d.onclick = () => selectRight(i); rightDiv.appendChild(d) }); }
+        function selectLeft(i, el) { if (matches.hasOwnProperty(i)) return; selectedLeft = i; document.querySelectorAll('.item').forEach(e => e.classList.remove('selected')); el.classList.add('selected'); }
+        function selectRight(i) { if (selectedLeft !== null) { if (Object.values(matches).includes(i)) return; matches[selectedLeft] = i; let c = getColor(Object.keys(matches).length); leftDiv.children[selectedLeft].style.background = c; rightDiv.children[i].style.background = c; leftDiv.children[selectedLeft].style.pointerEvents = 'none'; rightDiv.children[i].style.pointerEvents = 'none'; selectedLeft = null; } }
+        function getColor(i) { const colors = ['#ffccbc', '#c5e1a5', '#b3e5fc', '#f8bbd0', '#d1c4e9']; return colors[(i - 1) % colors.length] }
+        function checkAnswer() { let ans = questions[filtered[current]].answer, correct = 0; Object.keys(ans).forEach(k => { if (matches[k] == ans[k]) correct++ }); alert('Correct: ' + correct + '/' + Object.keys(ans).length) }
+        function showAnswers() { let q = questions[filtered[current]], txt = ''; Object.keys(q.answer).forEach(k => { txt += (parseInt(k) + 1) + '. ' + q.left[k] + ' ➜ ' + q.right[q.answer[k]] + '<br>' }); document.getElementById('answerBox').innerHTML = txt; }
+        function saveDifficulty() { pageStatus[filtered[current]] = document.getElementById('difficulty').value; localStorage.setItem('pageStatus', JSON.stringify(pageStatus)); }
+        function applyFilter() { let f = document.getElementById('filter').value; filtered = []; for (let i = 0; i < questions.length; i++) { let s = pageStatus[i] || 'easy'; if (f === 'all' || f === s) filtered.push(i); } current = 0; if (filtered.length === 0) { leftDiv.innerHTML = ''; rightDiv.innerHTML = ''; document.getElementById('answerBox').innerHTML = 'No pages found'; return; } loadQ(); }
+        function nextQ() { if (current < filtered.length - 1) { current++; loadQ(); } }
+        function prevQ() { if (current > 0) { current--; loadQ(); } }
         loadQ();
     </script>
-
 </body>
 </html>
