@@ -109,7 +109,8 @@
             <option value='all'>All Pages</option>
             <option value='hard'>Hard</option>
         </select>
-        <button class='smallbtn' onclick='showAnswers()'>💡 Answer</button><button class='smallbtn' onclick='clearStorage()'>🗑 Clear</button>
+        <button class='smallbtn' onclick='showAnswers()'>💡 </button><button class='smallbtn' onclick='clearStorage()'>🗑 </button>
+        <button class='smallbtn' onclick='searchWord()'>🔍 </button>
     </div>
     <div class='answerBox' id='answerBox'></div>
     <div class='question-box'>
@@ -4925,6 +4926,20 @@
         let current = 0, selectedLeft = null, matches = {}, filtered = questions.map((_, i) => i);
         let rowStatus = JSON.parse(localStorage.getItem('rowStatus') || '{}');
         const leftDiv = document.getElementById('left'), rightDiv = document.getElementById('right');
+
+        function getRepeatCount(word) {
+            let count = 0;
+            questions.forEach(q => q.left.forEach(w => {
+                if (w === word) count++;
+            }));
+            return count;
+        }
+
+        function formatLeftWord(word) {
+            let count = getRepeatCount(word);
+            return count > 1 ? word + '(#R' + count + ')' : word;
+        }
+
         function loadQ() {
             document.getElementById('pageCount').innerText =
                 (current + 1) + '/' + filtered.length;
@@ -4937,12 +4952,11 @@
             matches = {};
             document.getElementById('answerBox').innerHTML = '';
 
-            // HARD SECTION
+            // HARD SECTION (same as before)
             if (ref === 'hard_all') {
                 leftDiv.style.width = '100%';
                 rightDiv.style.display = 'none';
 
-                // control page scroll
                 document.body.style.paddingBottom = '0px';
                 document.body.style.overflowX = 'hidden';
 
@@ -4975,7 +4989,6 @@
                 if (count === 0) {
                     document.getElementById('answerBox').innerHTML = 'No hard rows found';
                 }
-
                 return;
             }
 
@@ -5004,7 +5017,7 @@
 
                 let d = document.createElement('div');
                 d.className = 'item';
-                d.innerText = t;
+                d.innerText = formatLeftWord(t);
 
                 let st = rowStatus[real + '_' + i];
                 if (st) {
@@ -5030,6 +5043,43 @@
                 rightDiv.appendChild(d);
             });
         }
+
+        function nextQ() {
+            current = (current + 1) % filtered.length;
+            loadQ();
+        }
+
+        /* Replace prevQ() */
+        function prevQ() {
+            current = (current - 1 + filtered.length) % filtered.length;
+            loadQ();
+        }
+
+        /* Add searchWord() */
+        function searchWord() {
+            let s = prompt('Enter word to search');
+            if (!s) return;
+
+            s = s.toLowerCase().trim();
+            filtered = [];
+
+            questions.forEach((q, pi) => {
+                let found =
+                    q.left.some(x => x.toLowerCase().includes(s)) ||
+                    q.right.some(x => x.toLowerCase().includes(s));
+
+                if (found) filtered.push(pi);
+            });
+
+            if (filtered.length === 0) {
+                alert('No page found');
+                filtered = questions.map((_, i) => i);
+            }
+
+            current = 0;
+            loadQ();
+        }
+
         function selectLeft(i, el) { if (matches.hasOwnProperty(i)) return; selectedLeft = i; document.querySelectorAll('.item').forEach(e => e.classList.remove('selected')); el.classList.add('selected'); let real = filtered[current]; document.getElementById('difficulty').value = rowStatus[real + '_' + i] || ''; }
         function selectRight(i) { if (selectedLeft !== null) { if (Object.values(matches).includes(i)) return; matches[selectedLeft] = i; let c = getColor(Object.keys(matches).length); leftDiv.children[selectedLeft].style.background = c; rightDiv.children[i].style.background = c; leftDiv.children[selectedLeft].style.pointerEvents = 'none'; rightDiv.children[i].style.pointerEvents = 'none'; selectedLeft = null; } }
         function getColor(i) { const colors = ['#ffccbc', '#c5e1a5', '#b3e5fc', '#f8bbd0', '#d1c4e9']; return colors[(i - 1) % colors.length] }
@@ -5037,8 +5087,6 @@
         function showAnswers() { let q = questions[filtered[current]], txt = ''; Object.keys(q.answer).forEach(k => { txt += (parseInt(k) + 1) + '. ' + q.left[k] + ' ➜ ' + q.right[q.answer[k]] + '<br>' }); document.getElementById('answerBox').innerHTML = txt; }
         function saveDifficulty() { if (selectedLeft === null) return; let real = filtered[current]; let val = document.getElementById('difficulty').value; let key = real + '_' + selectedLeft; rowStatus[key] = val; localStorage.setItem('rowStatus', JSON.stringify(rowStatus)); let row = leftDiv.children[selectedLeft]; if (row) { row.style.border = '2px solid ' + (val === 'hard' ? '#e53935' : '#43a047'); } }
         function applyFilter() { let f = document.getElementById('filter').value; filtered = []; if (f === 'all') { filtered = questions.map((_, i) => i); } else { filtered = ['hard_all']; } current = 0; loadQ(); }
-        function nextQ() { if (current < filtered.length - 1) { current++; loadQ(); } }
-        function prevQ() { if (current > 0) { current--; loadQ(); } }
         function clearStorage() { if (confirm('Clear all saved data?')) { localStorage.clear(); rowStatus = {}; filtered = questions.map((_, i) => i); current = 0; document.getElementById('filter').value = 'all'; loadQ(); } }
         loadQ();
     </script>
