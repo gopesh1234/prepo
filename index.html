@@ -102,15 +102,17 @@
     </style>
 </head>
 <body>
-    <div class='header'>IDIOMS_OWS_PV <span id='pageCount' style='float:right;font-size:14px;margin-right:10px'></span></div>
+    <div class='header'>IDIOMS_OWS_PV_VOCAB<span id='pageCount' style='float:right;font-size:14px;margin-right:10px'></span></div>
     <div class='topbar'>
         <select id='difficulty' onchange='saveDifficulty()'><option value='hard'>Hard</option></select>
         <select id='filter' onchange='applyFilter()'>
             <option value='all'>All Pages</option>
             <option value='hard'>Hard</option>
+            <option value='hidden'>Easy Section</option>
         </select>
         <button class='smallbtn' onclick='showAnswers()'>💡 </button><button class='smallbtn' onclick='clearStorage()'>🗑 </button>
         <button class='smallbtn' onclick='searchWord()'>🔍 </button>
+        <button class='smallbtn' onclick='togglePageVisibility()'>👁</button>
     </div>
     <div class='answerBox' id='answerBox'></div>
     <div class='question-box'>
@@ -10611,52 +10613,98 @@
                 }
             },
         ];
-        let current = 0, selectedLeft = null, matches = {}, filtered = questions.map((_, i) => i);
+        let current = 0,
+            selectedLeft = null,
+            matches = {},
+            hiddenPages = JSON.parse(localStorage.getItem('hiddenPages') || '[]'),
+            filtered = questions
+                .map((_, i) => i)
+                .filter(i => !hiddenPages.includes(i));
+
         let rowStatus = JSON.parse(localStorage.getItem('rowStatus') || '{}');
-        const leftDiv = document.getElementById('left'), rightDiv = document.getElementById('right');
+
+        const leftDiv = document.getElementById('left'),
+            rightDiv = document.getElementById('right');
 
         function getRepeatCount(word) {
+
             let count = 0;
-            questions.forEach(q => q.left.forEach(w => {
-                if (w === word) count++;
-            }));
+
+            questions.forEach(q => {
+
+                q.left.forEach(w => {
+
+                    if (w === word) count++;
+                });
+            });
+
             return count;
         }
 
         function formatLeftWord(word) {
+
             let count = getRepeatCount(word);
-            return count > 1 ? word + '(#R' + count + ')' : word;
+
+            return count > 1
+                ? word + '(#R' + count + ')'
+                : word;
         }
 
         function loadQ() {
+
+            if (filtered.length === 0) {
+
+                leftDiv.innerHTML = '';
+                rightDiv.innerHTML = '';
+
+                document.getElementById('answerBox').innerHTML =
+                    'No pages available';
+
+                document.getElementById('pageCount').innerText =
+                    '0/0';
+
+                return;
+            }
+
             document.getElementById('pageCount').innerText =
                 (current + 1) + '/' + filtered.length;
 
             let ref = filtered[current];
+
             if (ref == null) return;
 
             leftDiv.innerHTML = '';
             rightDiv.innerHTML = '';
+
             matches = {};
+
             document.getElementById('answerBox').innerHTML = '';
 
-            // HARD SECTION (same as before)
+            // HARD SECTION
             if (ref === 'hard_all') {
+
                 leftDiv.style.width = '100%';
+
                 rightDiv.style.display = 'none';
 
                 document.body.style.paddingBottom = '0px';
+
                 document.body.style.overflowX = 'hidden';
 
                 let count = 0;
 
                 for (let p = 0; p < questions.length; p++) {
+
                     for (let r = 0; r < questions[p].left.length; r++) {
+
                         if (rowStatus[p + '_' + r] === 'hard') {
+
                             count++;
 
                             let box = document.createElement('div');
+
                             box.className = 'item';
+
                             box.style.width = '100%';
                             box.style.margin = '10px 0';
                             box.style.lineHeight = '1.5';
@@ -10664,68 +10712,100 @@
                             box.style.wordBreak = 'break-word';
 
                             box.innerHTML =
-                                "<b>" + questions[p].left[r] + ":</b> " +
-                                questions[p].right[questions[p].answer[r]];
+                                "<b>" +
+                                questions[p].left[r] +
+                                ":</b> " +
+                                questions[p].right[
+                                questions[p].answer[r]
+                                ];
 
                             leftDiv.appendChild(box);
                         }
                     }
                 }
 
-                document.getElementById('pageCount').innerText = '1/1';
+                document.getElementById('pageCount').innerText =
+                    '1/1';
 
                 if (count === 0) {
-                    document.getElementById('answerBox').innerHTML = 'No hard rows found';
+
+                    document.getElementById('answerBox').innerHTML =
+                        'No hard rows found';
                 }
+
                 return;
             }
 
             // NORMAL SECTION
             document.body.style.paddingBottom = '70px';
+
             document.body.style.overflowX = 'hidden';
 
             leftDiv.style.width = '48%';
+
             rightDiv.style.width = '48%';
+
             rightDiv.style.display = 'block';
 
             let rowOnly = false;
+
             let real = ref;
 
             if (String(ref).includes('_')) {
+
                 let parts = String(ref).split('_');
+
                 real = parseInt(parts[0]);
+
                 selectedLeft = parseInt(parts[1]);
+
                 rowOnly = true;
             }
 
             document.getElementById('difficulty').value = '';
 
             questions[real].left.forEach((t, i) => {
+
                 if (rowOnly && i !== selectedLeft) return;
 
                 let d = document.createElement('div');
+
                 d.className = 'item';
+
                 d.innerText = formatLeftWord(t);
 
                 let st = rowStatus[real + '_' + i];
+
                 if (st) {
+
                     d.style.border =
-                        '2px solid ' + (st === 'hard' ? '#e53935' : '#43a047');
+                        '2px solid ' +
+                        (st === 'hard'
+                            ? '#e53935'
+                            : '#43a047');
                 }
 
                 d.onclick = () => selectLeft(i, d);
+
                 leftDiv.appendChild(d);
             });
 
             questions[real].right.forEach((t, i) => {
+
                 if (rowOnly) {
-                    let ans = questions[real].answer[selectedLeft];
+
+                    let ans =
+                        questions[real].answer[selectedLeft];
+
                     if (i !== ans) return;
                 }
 
                 let d = document.createElement('div');
+
                 d.className = 'item';
+
                 d.innerText = t;
+
                 d.onclick = () => selectRight(i);
 
                 rightDiv.appendChild(d);
@@ -10733,49 +10813,312 @@
         }
 
         function nextQ() {
-            current = (current + 1) % filtered.length;
+
+            if (filtered.length === 0) return;
+
+            current =
+                (current + 1) % filtered.length;
+
             loadQ();
         }
 
-        /* Replace prevQ() */
         function prevQ() {
-            current = (current - 1 + filtered.length) % filtered.length;
+
+            if (filtered.length === 0) return;
+
+            current =
+                (current - 1 + filtered.length) %
+                filtered.length;
+
             loadQ();
         }
 
-        /* Add searchWord() */
         function searchWord() {
+
             let s = prompt('Enter word to search');
+
             if (!s) return;
 
             s = s.toLowerCase().trim();
+
             filtered = [];
 
             questions.forEach((q, pi) => {
+
+                if (
+                    document.getElementById('filter').value !== 'hidden' &&
+                    hiddenPages.includes(pi)
+                ) return;
+
                 let found =
-                    q.left.some(x => x.toLowerCase().includes(s)) ||
-                    q.right.some(x => x.toLowerCase().includes(s));
+                    q.left.some(x =>
+                        x.toLowerCase().includes(s)
+                    ) ||
+                    q.right.some(x =>
+                        x.toLowerCase().includes(s)
+                    );
 
                 if (found) filtered.push(pi);
             });
 
             if (filtered.length === 0) {
+
                 alert('No page found');
-                filtered = questions.map((_, i) => i);
+
+                applyFilter();
+
+                return;
             }
 
             current = 0;
+
             loadQ();
         }
 
-        function selectLeft(i, el) { if (matches.hasOwnProperty(i)) return; selectedLeft = i; document.querySelectorAll('.item').forEach(e => e.classList.remove('selected')); el.classList.add('selected'); let real = filtered[current]; document.getElementById('difficulty').value = rowStatus[real + '_' + i] || ''; }
-        function selectRight(i) { if (selectedLeft !== null) { if (Object.values(matches).includes(i)) return; matches[selectedLeft] = i; let c = getColor(Object.keys(matches).length); leftDiv.children[selectedLeft].style.background = c; rightDiv.children[i].style.background = c; leftDiv.children[selectedLeft].style.pointerEvents = 'none'; rightDiv.children[i].style.pointerEvents = 'none'; selectedLeft = null; } }
-        function getColor(i) { const colors = ['#ffccbc', '#c5e1a5', '#b3e5fc', '#f8bbd0', '#d1c4e9']; return colors[(i - 1) % colors.length] }
-        function checkAnswer() { let ans = questions[filtered[current]].answer, correct = 0; Object.keys(ans).forEach(k => { if (matches[k] == ans[k]) correct++ }); alert('Correct: ' + correct + '/' + Object.keys(ans).length) }
-        function showAnswers() { let q = questions[filtered[current]], txt = ''; Object.keys(q.answer).forEach(k => { txt += (parseInt(k) + 1) + '. ' + q.left[k] + ' ➜ ' + q.right[q.answer[k]] + '<br>' }); document.getElementById('answerBox').innerHTML = txt; }
-        function saveDifficulty() { if (selectedLeft === null) return; let real = filtered[current]; let val = document.getElementById('difficulty').value; let key = real + '_' + selectedLeft; rowStatus[key] = val; localStorage.setItem('rowStatus', JSON.stringify(rowStatus)); let row = leftDiv.children[selectedLeft]; if (row) { row.style.border = '2px solid ' + (val === 'hard' ? '#e53935' : '#43a047'); } }
-        function applyFilter() { let f = document.getElementById('filter').value; filtered = []; if (f === 'all') { filtered = questions.map((_, i) => i); } else { filtered = ['hard_all']; } current = 0; loadQ(); }
-        function clearStorage() { if (confirm('Clear all saved data?')) { localStorage.clear(); rowStatus = {}; filtered = questions.map((_, i) => i); current = 0; document.getElementById('filter').value = 'all'; loadQ(); } }
+        function selectLeft(i, el) {
+
+            if (matches.hasOwnProperty(i)) return;
+
+            selectedLeft = i;
+
+            document
+                .querySelectorAll('.item')
+                .forEach(e =>
+                    e.classList.remove('selected')
+                );
+
+            el.classList.add('selected');
+
+            let real = filtered[current];
+
+            document.getElementById('difficulty').value =
+                rowStatus[real + '_' + i] || '';
+        }
+
+        function selectRight(i) {
+
+            if (selectedLeft !== null) {
+
+                if (
+                    Object.values(matches).includes(i)
+                ) return;
+
+                matches[selectedLeft] = i;
+
+                let c = getColor(
+                    Object.keys(matches).length
+                );
+
+                leftDiv.children[selectedLeft]
+                    .style.background = c;
+
+                rightDiv.children[i]
+                    .style.background = c;
+
+                leftDiv.children[selectedLeft]
+                    .style.pointerEvents = 'none';
+
+                rightDiv.children[i]
+                    .style.pointerEvents = 'none';
+
+                selectedLeft = null;
+            }
+        }
+
+        function getColor(i) {
+
+            const colors = [
+                '#ffccbc',
+                '#c5e1a5',
+                '#b3e5fc',
+                '#f8bbd0',
+                '#d1c4e9'
+            ];
+
+            return colors[(i - 1) % colors.length];
+        }
+
+        function checkAnswer() {
+
+            let ans =
+                questions[filtered[current]].answer;
+
+            let correct = 0;
+
+            Object.keys(ans).forEach(k => {
+
+                if (matches[k] == ans[k]) {
+
+                    correct++;
+                }
+            });
+
+            alert(
+                'Correct: ' +
+                correct +
+                '/' +
+                Object.keys(ans).length
+            );
+        }
+
+        function showAnswers() {
+
+            let q =
+                questions[filtered[current]];
+
+            let txt = '';
+
+            Object.keys(q.answer).forEach(k => {
+
+                txt +=
+                    (parseInt(k) + 1) +
+                    '. ' +
+                    q.left[k] +
+                    ' ➜ ' +
+                    q.right[q.answer[k]] +
+                    '<br>';
+            });
+
+            document.getElementById('answerBox').innerHTML =
+                txt;
+        }
+
+        function saveDifficulty() {
+
+            if (selectedLeft === null) return;
+
+            let real = filtered[current];
+
+            let val =
+                document.getElementById('difficulty').value;
+
+            let key =
+                real + '_' + selectedLeft;
+
+            rowStatus[key] = val;
+
+            localStorage.setItem(
+                'rowStatus',
+                JSON.stringify(rowStatus)
+            );
+
+            let row =
+                leftDiv.children[selectedLeft];
+
+            if (row) {
+
+                row.style.border =
+                    '2px solid ' +
+                    (val === 'hard'
+                        ? '#e53935'
+                        : '#43a047');
+            }
+        }
+
+        function applyFilter() {
+
+            let f =
+                document.getElementById('filter').value;
+
+            filtered = [];
+
+            if (f === 'all') {
+
+                filtered = questions
+                    .map((_, i) => i)
+                    .filter(i =>
+                        !hiddenPages.includes(i)
+                    );
+
+            } else if (f === 'hidden') {
+
+                filtered = [...hiddenPages];
+
+            } else {
+
+                filtered = ['hard_all'];
+            }
+
+            if (filtered.length === 0) {
+
+                alert('No pages found');
+
+                filtered = questions
+                    .map((_, i) => i)
+                    .filter(i =>
+                        !hiddenPages.includes(i)
+                    );
+
+                document.getElementById('filter').value =
+                    'all';
+            }
+
+            current = 0;
+
+            loadQ();
+        }
+
+        function togglePageVisibility() {
+
+            let ref = filtered[current];
+
+            if (ref === 'hard_all') {
+
+                alert('Cannot hide this page');
+
+                return;
+            }
+
+            let real = ref;
+
+            if (hiddenPages.includes(real)) {
+
+                hiddenPages =
+                    hiddenPages.filter(
+                        x => x !== real
+                    );
+
+                alert('Page shown');
+
+            } else {
+
+                hiddenPages.push(real);
+
+                alert('Page hidden');
+            }
+
+            localStorage.setItem(
+                'hiddenPages',
+                JSON.stringify(hiddenPages)
+            );
+
+            applyFilter();
+        }
+
+        function clearStorage() {
+
+            if (
+                confirm('Clear all saved data?')
+            ) {
+
+                localStorage.clear();
+
+                rowStatus = {};
+
+                hiddenPages = [];
+
+                filtered =
+                    questions.map((_, i) => i);
+
+                current = 0;
+
+                document.getElementById('filter').value =
+                    'all';
+
+                loadQ();
+            }
+        }
+
         loadQ();
     </script>
 </body>
