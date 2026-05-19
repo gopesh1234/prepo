@@ -29,10 +29,11 @@
             background: #fff;
             position: sticky;
             top: 44px;
-            z-index: 2
+            z-index: 2;
+            flex-wrap: wrap
         }
 
-        select, .smallbtn {
+        select, .smallbtn, input {
             padding: 8px;
             border: none;
             border-radius: 8px;
@@ -99,36 +100,66 @@
             color: #333;
             font-size: 14px
         }
+
+        #visitedStatus {
+            padding: 5px 15px;
+            font-weight: bold;
+            color: #43a047
+        }
     </style>
 </head>
 <body>
-    <div class='header'>IDIOMS_OWS_PV_VOCAB<span id='pageCount' style='float:right;font-size:14px;margin-right:10px'></span></div>
+
+    <div class='header'>
+        IDIOMS_OWS_PV_VOCAB
+        <span id='pageCount' style='float:right;font-size:14px;margin-right:10px'></span>
+    </div>
+
     <div class='topbar'>
-        <select id='difficulty' onchange='saveDifficulty()'><option value='hard'>Hard</option></select>
+
+        <select id='difficulty' onchange='saveDifficulty()'>
+            <option value='hard'>Hard</option>
+        </select>
+
         <select id='filter' onchange='applyFilter()'>
             <option value='all'>All Pages</option>
             <option value='hard'>Hard</option>
             <option value='hidden'>Easy Section</option>
         </select>
-        <button class='smallbtn' onclick='showAnswers()'>💡 </button><button class='smallbtn' onclick='clearStorage()'>🗑 </button>
-        <button class='smallbtn' onclick='searchWord()'>🔍 </button>
+
+        <input type="number" id="jumpPage" placeholder="Page" style="width:70px">
+
+        <button class='smallbtn' onclick='goToPage()'>Go</button>
+
+        <button class='smallbtn' onclick='showAnswers()'>💡</button>
+
+        <button class='smallbtn' onclick='clearStorage()'>🗑</button>
+
+        <button class='smallbtn' onclick='searchWord()'>🔍</button>
+
         <button class='smallbtn' onclick='togglePageVisibility()'>👁</button>
+
     </div>
+
+    <div id="visitedStatus"></div>
+
     <div class='answerBox' id='answerBox'></div>
+
     <div class='question-box'>
         <div class='columns'>
             <div class='column' id='left'></div>
             <div class='column' id='right'></div>
         </div>
     </div>
+
     <div class='controls'>
         <button class='prev' onclick='prevQ()'>Prev</button>
         <button class='ok' onclick='checkAnswer()'>OK</button>
         <button class='next' onclick='nextQ()'>Next</button>
     </div>
+
     <script>
         let questions = [
-
             {
                 left: [
                     "Abrogate",
@@ -12631,6 +12662,7 @@
                 }
             },
         ];
+
         let current = 0,
             selectedLeft = null,
             matches = {},
@@ -12640,6 +12672,8 @@
                 .filter(i => !hiddenPages.includes(i));
 
         let rowStatus = JSON.parse(localStorage.getItem('rowStatus') || '{}');
+
+        let visitedPages = JSON.parse(localStorage.getItem('visitedPages') || '[]');
 
         const leftDiv = document.getElementById('left'),
             rightDiv = document.getElementById('right');
@@ -12681,11 +12715,29 @@
                 document.getElementById('pageCount').innerText =
                     '0/0';
 
+                document.getElementById('visitedStatus').innerHTML =
+                    '';
+
                 return;
             }
 
             document.getElementById('pageCount').innerText =
                 (current + 1) + '/' + filtered.length;
+
+            let currentRef = filtered[current];
+
+            // SHOW VISITED STATUS
+
+            if (visitedPages.includes(currentRef)) {
+
+                document.getElementById('visitedStatus').innerHTML =
+                    '✅ Attempted';
+
+            } else {
+
+                document.getElementById('visitedStatus').innerHTML =
+                    '';
+            }
 
             let ref = filtered[current];
 
@@ -12696,9 +12748,12 @@
 
             matches = {};
 
+            selectedLeft = null;
+
             document.getElementById('answerBox').innerHTML = '';
 
             // HARD SECTION
+
             if (ref === 'hard_all') {
 
                 leftDiv.style.width = '100%';
@@ -12724,9 +12779,13 @@
                             box.className = 'item';
 
                             box.style.width = '100%';
+
                             box.style.margin = '10px 0';
+
                             box.style.lineHeight = '1.5';
+
                             box.style.boxSizing = 'border-box';
+
                             box.style.wordBreak = 'break-word';
 
                             box.innerHTML =
@@ -12755,6 +12814,7 @@
             }
 
             // NORMAL SECTION
+
             document.body.style.paddingBottom = '70px';
 
             document.body.style.overflowX = 'hidden';
@@ -12828,6 +12888,29 @@
 
                 rightDiv.appendChild(d);
             });
+        }
+
+        function goToPage() {
+
+            let p =
+                parseInt(
+                    document.getElementById('jumpPage').value
+                );
+
+            if (
+                isNaN(p) ||
+                p < 1 ||
+                p > filtered.length
+            ) {
+
+                alert('Invalid page number');
+
+                return;
+            }
+
+            current = p - 1;
+
+            loadQ();
         }
 
         function nextQ() {
@@ -12958,8 +13041,10 @@
 
         function checkAnswer() {
 
+            let currentRef = filtered[current];
+
             let ans =
-                questions[filtered[current]].answer;
+                questions[currentRef].answer;
 
             let correct = 0;
 
@@ -12970,6 +13055,20 @@
                     correct++;
                 }
             });
+
+            visitedPages.push(currentRef);
+
+            localStorage.setItem(
+                'visitedPages',
+                JSON.stringify(visitedPages)
+            );
+
+            if (visitedPages.includes(currentRef)) {
+
+                document.getElementById('visitedStatus').innerHTML =
+                    '✅ Attempted';
+
+            }
 
             alert(
                 'Correct: ' +
@@ -13080,13 +13179,6 @@
 
             let ref = filtered[current];
 
-            if (ref === 'hard_all') {
-
-                alert('Cannot hide this page');
-
-                return;
-            }
-
             let real = ref;
 
             if (hiddenPages.includes(real)) {
@@ -13125,6 +13217,8 @@
 
                 hiddenPages = [];
 
+                visitedPages = [];
+
                 filtered =
                     questions.map((_, i) => i);
 
@@ -13138,6 +13232,7 @@
         }
 
         loadQ();
+
     </script>
 </body>
 </html>
