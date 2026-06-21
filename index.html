@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IDIOMS_OWS_PV_VOCAB</title>
+    <title>VOCAB</title>
     <style>
         body {
             font-family: Arial;
@@ -125,6 +125,8 @@
             <option value='all'>All Pages</option>
             <option value='hard'>Hard</option>
             <option value='hidden'>Easy Section</option>
+            <option value='attempted'>Attempted Sections</option>
+            <option value='removehard'>Remove Hard Data</option>
         </select>
 
         <input type="number" id="jumpPage" placeholder="Page" style="width:70px">
@@ -13134,46 +13136,81 @@
 
         function applyFilter() {
 
-            let f =
-                document.getElementById('filter').value;
+    let f =
+        document.getElementById('filter').value;
 
-            filtered = [];
+    filtered = [];
 
-            if (f === 'all') {
+    if (f === 'all') {
 
-                filtered = questions
-                    .map((_, i) => i)
-                    .filter(i =>
-                        !hiddenPages.includes(i)
-                    );
+        filtered = questions
+            .map((_, i) => i)
+            .filter(i =>
+                !hiddenPages.includes(i)
+            );
 
-            } else if (f === 'hidden') {
+    } else if (f === 'hidden') {
 
-                filtered = [...hiddenPages];
+        filtered = [...hiddenPages];
 
-            } else {
+    } else if (f === 'attempted') {
 
-                filtered = ['hard_all'];
-            }
+        filtered = [...visitedPages];
 
-            if (filtered.length === 0) {
+    } else if (f === 'removehard') {
 
-                alert('No pages found');
+        if (confirm('Remove all Hard marked rows?')) {
 
-                filtered = questions
-                    .map((_, i) => i)
-                    .filter(i =>
-                        !hiddenPages.includes(i)
-                    );
+            Object.keys(rowStatus).forEach(k => {
 
-                document.getElementById('filter').value =
-                    'all';
-            }
+                if (rowStatus[k] === 'hard') {
+                    delete rowStatus[k];
+                }
 
-            current = 0;
+            });
 
-            loadQ();
+            localStorage.setItem(
+                'rowStatus',
+                JSON.stringify(rowStatus)
+            );
+
+            alert('All hard rows removed');
+
         }
+
+        document.getElementById('filter').value =
+            'all';
+
+        filtered = questions
+            .map((_, i) => i)
+            .filter(i =>
+                !hiddenPages.includes(i)
+            );
+
+    } else {
+
+        filtered = ['hard_all'];
+
+    }
+
+    if (filtered.length === 0) {
+
+        alert('No pages found');
+
+        filtered = questions
+            .map((_, i) => i)
+            .filter(i =>
+                !hiddenPages.includes(i)
+            );
+
+        document.getElementById('filter').value =
+            'all';
+    }
+
+    current = 0;
+
+    loadQ();
+}
 
         function togglePageVisibility() {
 
